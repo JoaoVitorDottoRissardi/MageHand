@@ -1,5 +1,59 @@
 import pygame
-from time import sleep
+
+"""
+Class for handling the display functions
+
+Attributes
+----------
+
+colors: dict
+    dictionary of colors the display should use. It should follow this format:
+        'colors' : {
+            'Alert' : (255,0,0),
+            'Info' : (0,0,255),
+            'Confirm' : (0,255,0),
+            'Text' : (0,0,0),
+            'Background' : (255,255,255)
+ 	    }
+
+images: dict
+    dictionary of images the display should render. It should follow this format:
+        'images' : {
+            'Info' : {
+                'type' : 'Icon',
+                'path' : './images/info.png'
+            },
+            'ThumbsUp' : {
+                'type' : 'Gesture',
+                'path' : './images/thumbs_up.png'
+            },
+            'Candy1' : {
+                'type' : 'Candy',
+                'path' : './images/mms.jpg'
+            },
+        }
+
+imageSize: int
+    value that will be the maximum size a dimension of a image could have in absolute pixels
+
+imagePositions: dict
+    dictionary containg the positions each type of image should be rendered when requested, like this:
+        'imagePositions' : {
+            'Icon' : (30,30),
+            'Candy' : (375, 30),
+            'Gesture' : (375, 215)
+        },  
+
+textSize: int
+    the size the text will assume in absolute pixels
+
+textFont: Font
+    font that the text will be displayed
+
+borderWidth: int
+    width of the border the display will always render in absolute pixels      
+
+"""
 
 class Display:
     
@@ -40,7 +94,18 @@ class Display:
                 }
             })
 
-    #Update one single image
+    """
+        Function to update on single image
+
+        Parameters
+        ----------
+        image : str
+             name of the image the sould be reloaded.
+        
+        obs : this functions consider the path of the image to be reloaded didn't change, only the image
+
+    """
+
     def updateImage(self, image):
         imageInfo = self.images[image]
         path = imageInfo['path']
@@ -55,7 +120,28 @@ class Display:
         imageInfo.update('figure', scaledImage)
         self.images.update({image : imageInfo})
 
-    #Display a text breaking lines
+    """
+        Function to display a text left justified breaking lines
+
+        Parameters
+        ----------
+        surface : Surface
+             surface in which the text will be displayed, usually self.screen
+        
+        text : str
+             text to be displayed, the line break point should be specified using '\n' inside the text
+
+        pos : tuple (int, int)
+             top left corner the text will be rendered in absolute pixels
+        
+        font: Font
+             font in which the text will be displayed, usually self.font
+        
+        color: tuple RGB
+             color in which the text will be displayed, usually self.color
+
+    """
+        
     def displayText(surface, text, pos, font, color):
         collection = [word.split(' ') for word in text.splitlines()]
         space = font.size(' ')[0]
@@ -72,6 +158,26 @@ class Display:
             x = pos[0]
             y += word_height
     
+    """
+        Function to display a text centered on screen while breaking lines
+
+        Parameters
+        ----------
+        surface : Surface
+             surface in which the text will be displayed, usually self.screen
+        
+        text : str
+             text to be displayed, the line break point should be specified using '\n' inside the text
+        
+        font: Font
+             font in which the text will be displayed, usually self.font
+        
+        color: tuple RGB
+             color in which the text will be displayed, usually self.color
+
+    """
+
+
     def displayTextCentered(self, surface, text, font, color):
         lines = text.splitlines()
         
@@ -94,6 +200,25 @@ class Display:
                 x += word_surface.get_width() + space_width
 
             y += font.size(line)[1]
+
+    """
+        Function to display a certain pre-defined content
+
+        Parameters
+        ----------
+        type : str
+             string the indicate the type of content that should be displayed. For now it must be
+             either 'Alert', 'Info' our 'Confirm'. Other types may be added.
+        
+        message : str
+             message to be displayed in the 'type' context. This message must contain '\n' inside
+             it when it should break lines.
+
+        images : list[str]
+             images that sould be displayed along with the text. Theses images must be along the ones
+             loaded during constructor and therefore should have the same names.
+
+    """
 
     def displayContent(self, type, message, images):
         font = pygame.font.Font(self.textFont, self.textSize)
