@@ -1,6 +1,7 @@
 from Display import Display
 from Motor import Motor
 from Servo import Servo
+from time import sleep
 
 """
 Class that represents the physical entity of the machine, it contains 2 motors, 2 servos and 1 display
@@ -67,12 +68,14 @@ class Machine:
         )
 
         self.motor1 = Motor(
-            motorParameters[1]['pin'],
+            motorParameters[1]['forward'],
+            motorParameters[1]['backward'],
             motorParameters[1]['speed']
         )
 
         self.motor2 = Motor(
-            motorParameters[2]['pin'],
+            motorParameters[2]['forward'],
+            motorParameters[2]['backward'],
             motorParameters[2]['speed']
         )
 
@@ -92,6 +95,7 @@ class Machine:
     def acceptCandies(self):
         self.servo1.spinTo(90)
         self.servo2.spinTo(90)
+        sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)
     
@@ -103,6 +107,7 @@ class Machine:
     def rejectCandies(self):
         self.servo1.spinTo(-90)
         self.servo2.spinTo(-90)
+        sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)
 
@@ -223,6 +228,8 @@ class Machine:
     def updateCandyImage(self, candy):
         self.display.updateImage(candy)
 
+# print("Oi")
+
 # displayParameters = {
 # 	'colors' : {
 # 		'Alert' : (255,0,0),
@@ -240,97 +247,133 @@ class Machine:
 # 	'textSize' : 45,
 # 	'textFont' : None,
 # 	'borderWidth' : 20,
-	# 'images' : {
-	# 	'Info' : {
-	# 		'type' : 'Icon',
-	# 		'path' : './images/info.png'
-	# 	},
-	# 	'Alert' : {
-	# 		'type' : 'Icon',
-	# 		'path' : './images/alert.png'
-	# 	},
-	# 	'Confirm' : {
-	# 		'type' : 'Icon',
-	# 		'path' : './images/confirm.jpg'
-	# 	},
-	# 	'ThumbsUp' : {
-	# 		'type' : 'Gesture',
-	# 		'path' : './images/thumbs_up.png'
-	# 	},
-    #     'ThumbsDown' : {
-	# 		'type' : 'Gesture',
-	# 		'path' : './images/thumbs_down.png'
-	# 	},
-    #     'Stop' : {
-	# 		'type' : 'Gesture',
-	# 		'path' : './images/stop.png'
-	# 	},
-    #     'Fist' : {
-	# 		'type' : 'Gesture',
-	# 		'path' : './images/fist.png'
-	# 	},
-    #     'Peace' : {
-	# 		'type' : 'Gesture',
-	# 		'path' : './images/peace.png'
-	# 	},
-    #     'Candy1' : {
-    #         'type' : 'Candy',
-    #         'path' : './images/mms.jpg'
-    #     },
-    #     'Candy2' : {
-    #         'type' : 'Candy',
-    #         'path' : './images/jelly_beans.jpg'
-    #     }
-	# }
+# 	'images' : {
+# 		'Info' : {
+# 			'type' : 'Icon',
+# 			'path' : './images/info.png'
+# 		},
+# 		'Alert' : {
+# 			'type' : 'Icon',
+# 			'path' : './images/alert.png'
+# 		},
+# 		'Confirm' : {
+# 			'type' : 'Icon',
+# 			'path' : './images/confirm.jpg'
+# 		},
+# 		'ThumbsUp' : {
+# 			'type' : 'Gesture',
+# 			'path' : './images/thumbs_up.png'
+# 		},
+#         'ThumbsDown' : {
+# 			'type' : 'Gesture',
+# 			'path' : './images/thumbs_down.png'
+# 		},
+#         'Stop' : {
+# 			'type' : 'Gesture',
+# 			'path' : './images/stop.png'
+# 		},
+#         'Fist' : {
+# 			'type' : 'Gesture',
+# 			'path' : './images/fist.png'
+# 		},
+#         'Peace' : {
+# 			'type' : 'Gesture',
+# 			'path' : './images/peace.png'
+# 		},
+#         'Candy1' : {
+#             'type' : 'Candy',
+#             'path' : './images/mms.jpg'
+#         },
+#         'Candy2' : {
+#             'type' : 'Candy',
+#             'path' : './images/jelly_beans.jpg'
+#         }
+# 	}
 
 # }
 
 # servoParameters = {
 #     1:{
-#         'pin': 1,
+#         'pin': 2,
 #         'angleStep': 1,
-#         'speed': 1
+#         'speed': 90
 #     },
 #     2:{
-#         'pin': 1,
+#         'pin': 3,
 #         'angleStep': 1,
-#         'speed': 1
+#         'speed': 90
 #     }
 # }
 
 # motorParameters = {
 #     1:{
-#         'pin': 1,
-#         'speed': 1
+#         'forward': 23,
+#         'backward': 16,
+#         'speed': 0.5
 #     },
 #     2:{
-#         'pin': 1,
-#         'speed': 1
+#         'forward': 24,
+#         'backward': 20,
+#         'speed': 0.5
 #     }
 # }
 
+# print("init creation")
+
 # machine = Machine(displayParameters, servoParameters, motorParameters)
 
-# machine.showGestureMessage('teste', 'Alert', ['Peace', 'Stop', 'ThumbsUp'])
+# while True:
 
-# sleep(5)
+#     print("init loop")
 
-# # machine.showGestureMessage('teste', 'Info', ['Stop'])
+#     machine.showGestureMessage('teste', 'Alert', ['Peace', 'Stop', 'ThumbsUp'])
 
-# # sleep(5)
+#     sleep(5)
 
-# # machine.showGestureMessage('teste', 'Confirm', ['ThumbsUp'])
+#     # machine.showGestureMessage('teste', 'Info', ['Stop'])
 
-# # sleep(5)
+#     # sleep(5)
 
-# # machine.showGestureMessage('teste', 'Alert', ['ThumbsDown'])
+#     # machine.showGestureMessage('teste', 'Confirm', ['ThumbsUp'])
 
-# # sleep(5)
+#     # sleep(5)
 
-# # machine.showGestureMessage('teste', 'Info', ['Fist'])
+#     # machine.showGestureMessage('teste', 'Alert', ['ThumbsDown'])
 
-# # sleep(5)
+#     # sleep(5)
 
-# machine.showBuyingMessage('teste', ['Candy1', 'Candy2'])
+#     # machine.showGestureMessage('teste', 'Info', ['Fist'])
 
-# sleep(5)
+#     # sleep(5)
+
+#     machine.showBuyingMessage('teste', ['Candy1', 'Candy2'])
+
+#     sleep(5)
+
+#     print("Aceitar doces")
+
+#     machine.acceptCandies()
+
+#     sleep(5)
+
+#     print("Rejeitar doces")
+
+#     machine.rejectCandies()
+
+#     sleep(5)
+
+#     # print("Colocar doce 1")
+
+#     # machine.pourCandy(1)
+
+#     # sleep(5)
+
+#     # print("Colocar doce 2")
+
+#     # machine.stopPouringCandy(1)
+
+#     # machine.pourCandy(2)
+
+#     # sleep(5)
+
+#     # machine.stopPouringCandy(2)
