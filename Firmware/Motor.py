@@ -1,4 +1,4 @@
-from gpiozero import Motor
+import gpiozero
 
 """
 Class for handling the DC motor functions
@@ -21,10 +21,10 @@ motor: Motor
 
 class Motor:
 
-    def __init__(self, pin, speed):
-        self.pin = pin
+    def __init__(self, forward, backward, speed):
+        self.pin = forward
         self.speed = speed
-        self.motor = Motor(pin=pin, pwm=True)
+        self.motor = gpiozero.Motor(forward=forward, backward=backward, pwm=True)
 
     """
         Function to turn ON the motor
