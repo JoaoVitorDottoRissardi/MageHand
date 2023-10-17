@@ -1,5 +1,6 @@
 from gpiozero import AngularServo 
 from gpiozero.tools import quantized
+from time import sleep
 
 """
 Class for handling the Servo motor functions
@@ -29,10 +30,10 @@ class Servo:
 		self.pin = pin
 		self.angleStep = angleStep
 		self.speed = speed
-		# myCorrection=0.45
-		# maxPW=(2.0+myCorrection)/1000
-		# minPW=(1.0-myCorrection)/1000
-		self.servo = AngularServo(pin=pin, min_angle=-90, max_angle=90)
+		myCorrection=0.45
+		maxPW=(2.0+myCorrection)/1000
+		minPW=(1.0-myCorrection)/1000
+		self.servo = AngularServo(pin=pin, min_angle=-90, max_angle=90, min_pulse_width=minPW, max_pulse_width=maxPW)
 
 	"""
         Function to spin the motor to a determined location
@@ -46,8 +47,21 @@ class Servo:
 
 	def spinTo(self, angle):
 		currentAngle = self.servo.angle
-		deltaAngle = currentAngle - angle
-		print('current angle: ', currentAngle)
-		self.servo.source = quantized([currentAngle, angle], deltaAngle/self.angleStep)
-		self.servo.source_delay = (self.angleStep/self.speed)
+		direction = currentAngle - angle
+		print(currentAngle)
+		for i in range(int(currentAngle), angle, -1 if direction > 0 else 1):
+			self.servo.angle = i
+			sleep(1/self.speed)
+		# self.servo.source_delay = (self.angleStep/self.speed)
+		# self.servo.source = quantized([currentAngle/90, angle/90], deltaAngle/self.angleStep)
+		
+# servo = Servo(25, 1, 90)
+
+# sleep(2)
+
+# servo.spinTo(90)
+
+
+# while True:
+# 	pass
 
