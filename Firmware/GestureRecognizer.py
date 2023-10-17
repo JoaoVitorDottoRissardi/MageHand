@@ -1,5 +1,6 @@
 import cv2
 import operator
+import time
 import mediapipe as mp
 from mediapipe.tasks import BaseOptions
 from mediapipe.tasks.vision import HandLandmarker, HandLandmarkerOptions, VisionRunningMode
@@ -20,7 +21,10 @@ class GestureRecognizer:
             base_options=BaseOptions(model_asset_path='./hand_landmarker.task'),
             running_mode=VisionRunningMode.VIDEO)
         self.landmarker = HandLandmarker.create_from_options(options)
-        self.callbacks = {}
+        self.confirmationFlag = False
+        self.confirmationGesture = "None"
+        self.callbacks = { k.position_name:(False, lambda *args, **kwargs: None) for k in self.known_finger_poses }
+        self.callbacks = { k.position_name:(0, lambda *args, **kwargs: None) for k in self.known_finger_poses }
 
     def run(self):
         cap = cv2.VideoCapture(0)
@@ -42,8 +46,13 @@ class GestureRecognizer:
             return score_label
 
 
+        countdown = 3
+        timer = time.perf_counter_ns()
+        current_gesture = "None"
+        gesture_count = { k.position_name:0 for k in self.known_finger_poses }
         # Create a hand landmarker instance with the video mode:
         while True:
+            gesture = "None"
             ret, frame = cap.read()
             timestamp = cap.get(cv2.CAP_PROP_POS_MSEC)
             frame1 = cv2.resize(frame, (640, 480))
@@ -52,9 +61,8 @@ class GestureRecognizer:
 
             landmarks = []
 
-            for xablau in hand_landmarker_result.hand_landmarks:
-                print(xablau)
-                for landmark in xablau:
+            for result in hand_landmarker_result.hand_landmarks:
+                for landmark in result:
                     l = []
                     l.append(landmark.x)
                     l.append(landmark.y)
@@ -64,11 +72,29 @@ class GestureRecognizer:
             if landmarks != []:
                 score_label = predict_by_geometry([landmarks], self.known_finger_poses, 0.45)
                 print(score_label)
+                gesture = score_label
 
-    def setCallback(self, gesture, function, confirm_time=0, frame_tolerance=0):
-        if gesture not in self.known_finger_poses:
+            gesture_count[gesture] =+ 1
+            if gesture_count[gesture] > 10:
+                if self.confirmationFlag:
+                    if gesture != current_gesture:
+                        self.confirmationFlag = False
+                        timer = 0
+                    else:
+                        continue
+                current_gesture = gesture
+                gesture_count = { k.position_name:0 for k in self.known_finger_poses }
+                self.callbacks[gesture][1]()
+                if self.callbacks[gesture][0]:
+                    self.confirmationFlag = True
+                    timer = time.perf_counter_ns()
+
+
+    def setCallback(self, gesture, function=lambda *args, **kwargs: None, min_time=0, confirmationFunction=lambda *args, **kwargs: None):
+        if gesture not in [ f.position_name for f in self.known_finger_poses ]:
             return False
-        self.callbacks[(gesture, confirm_time, frame_tolerance)] = function
+        self.callbacks[gesture] = (min_time > 0, function)
+        self.confirmationCallbacks[gesture] = (min_time, confirmationFunction)
         return True
 
 
