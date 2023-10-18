@@ -172,6 +172,8 @@ class GestureRecognizer:
             score_label = 'Undefined'
             if landmarks != []:
                 score_label = predict_by_geometry([landmarks], self.known_finger_poses, 0.45)
+            else:
+                score_label = "None"
 
 
             if in_confirmation == 'No':
