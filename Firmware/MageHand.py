@@ -117,50 +117,36 @@ class MageHand:
     """
     def confirmationPhaseFunction(self):
         self.stateFile.write_text("confirmation")
-        self.machine.showGestureMessage('Customer Detected', 'Info', [])
-        return self.gestureRecognizer.runState("confirmation", ["ThumbsUp"], {}
-                                        , ["ThumbsUp"],{"ThumbsUp": lambda *args: "selection", "None": lambda *args: "introduction"})
+        self.machine.showGestureMessage('Customer Detected \n Do a Thumbs Up to Buy Candy', 'Info', ["ThumbsUp"])
+        return self.gestureRecognizer.runState("confirmation", ["ThumbsUp", "None"], {"ThumbsUp": lambda *args: "selection"}
+                                        , ["None"],{"None": lambda *args: "introduction"})
 
     """
-        Function to initiate the selection phase
+        TODO: Function to initiate the selection phase
     """
     def selectionPhaseFunction(self):
         self.stateFile.write_text("selection")
-        self.machine.showGestureMessage('Select Candy', 'Info', [])
-        callbacks = {
-            "Undefined": lambda x: x,
-            "ThumbsDown":lambda x: x,
-            "ThumbsUp":lambda x: x,
-            "None":lambda x: x
-        }
-        confirmation_callbacks = {
-            "Undefined": lambda x: x,
-            "ThumbsDown":lambda x: x,
-            "ThumbsUp":lambda x: x,
-            "None":lambda x: x
-        }
-        return self.gestureRecognizer.runState("selection", ["Undefined", "ThumbsDown", "ThumbsUp", "None"], callbacks, ["Undefined", "ThumbsDown", "ThumbsUp", "None"], confirmation_callbacks )
 
     """
-        Function to initiate the pouring phase
+        TODO: Function to initiate the pouring phase
     """
     def pouringPhaseFunction(self):
         self.stateFile.write_text("pouring")
         pass
     """
-        Function to initiate the decision phase
+        TODO: Function to initiate the decision phase
     """
     def decisionPhaseFunction(self):
         self.stateFile.write_text("decision")
         pass
     """
-        Function to initiate the payment phase
+        TODO: Function to initiate the payment phase
     """
     def paymentPhaseFunction(self):
         self.stateFile.write_text("payment")
         pass
     """
-        Function to set up firebase listener
+        TODO: Function to set up firebase listener
     """
     def firebaseCallbackFunction(self):
         pass
