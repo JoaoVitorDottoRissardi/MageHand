@@ -30,22 +30,27 @@ and the type of the sent data (json)
 """
 class PaymentManager:
     api_url = "https://api.mercadopago.com/v1/payments"
-    def __init__(self, publicKey, accessToken, method, payerData):
-        self.setPaymentKeys(publicKey, accessToken)
-        self.method = method
-        self.payerData = payerData
+    def __init__(self):
+        self.method = "pix"
         self.currentPayment = None
+        self.publicKey = None
+        self.headers = None
+        self.payerData = None
 
 
     """
         Method to set the appropriate payment keys
     """
-    def setPaymentKeys(self, publicKey, accessToken):
+    def setPaymentKeys(self, publicKey, accessToken, payerData):
         self.publicKey = publicKey
         self.headers = {
         'Authorization': f'Bearer {accessToken}',
         'Content-Type': 'application/json',
         }
+        self.payerData = payerData
+
+    def hasPaymentKeys(self):
+        return not (self.publicKey == None or self.headers == None or self.payerData == None)
 
     """
         Method to create a qrcode for payment of specific amounts. It returs
@@ -72,8 +77,10 @@ class PaymentManager:
     """
     def checkPayment(self):
         if self.currentPayment == None:
-            return False
+            return None
         response = requests.get(PaymentManager.api_url + '/' + self.currentPayment, headers=self.headers)
-        if response.status_code in [201, 200]:
-            json_resp = response.json()
-            resp = DotMap(json_resp)
+        if response.status_code not in [201, 200]:
+            return None
+        json_resp = response.json()
+        resp = DotMap(json_resp)
+        return resp["status"]
