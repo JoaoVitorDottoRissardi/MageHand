@@ -160,6 +160,7 @@ class GestureRecognizer:
             
             # magic conversion to expected landmarks format
             landmarks = []
+            Xpositions = []
             for xablau in hand_landmarker_result.hand_landmarks:
                 # print(xablau)
                 for landmark in xablau:
@@ -168,6 +169,7 @@ class GestureRecognizer:
                     l.append(landmark.y)
                     l.append(landmark.z)
                     landmarks.append(l)
+                    Xpositions.append(landmark.x)
             
             score_label = 'Undefined'
             if landmarks != []:
@@ -186,7 +188,7 @@ class GestureRecognizer:
 
                 if current_gesture_count >= times_to_really_detect:
                     # print(f"starting detection of '{score_label}'")
-                    new_state = gesture_started_callbacks[score_label]()
+                    new_state = gesture_started_callbacks[score_label](Xpositions=Xpositions)
                     if new_state != state:
                         return new_state
 
