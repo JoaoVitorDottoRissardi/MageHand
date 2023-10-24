@@ -42,8 +42,8 @@
             215
          ]
       },
-      "textSize":45,
-      "textFont":"None",
+      "textSize":30,
+      "textFont":"AbrilFatface-Regular.ttf",
       "borderWidth":20,
       "images":{
          "Info":{

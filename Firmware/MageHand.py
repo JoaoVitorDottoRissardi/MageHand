@@ -84,14 +84,17 @@ class MageHand:
         self.dataDir = Path("/var/lib/MageHand")
         self.dataDir.mkdir(exist_ok=True)
 
-        candyFile = (self.dataDir / "candyInformation.json").read_text()
-        candyData = json.loads(candyFile)
-        c1 = candyData["Candy1"]
-        c2 = candyData["Candy2"]
-        self.candy1 = Candy(c1["Name"], c1["Price"], c1["Volume"], c1["Image"])
-        self.candy2 = Candy(c2["Name"], c2["Price"], c2["Volume"], c2["Image"])
-        self.selectedCandy = None
+        if (self.dataDir / "candyInformation.json").exists():
+            candyFile = (self.dataDir / "candyInformation.json").read_text()
+            candyData = json.loads(candyFile)
+            c1 = candyData["Candy1"]
+            c2 = candyData["Candy2"]
+            self.candy1 = Candy(c1["Name"], c1["Price"], c1["Volume"], c1["Image"])
+            self.candy2 = Candy(c2["Name"], c2["Price"], c2["Volume"], c2["Image"])
+        else:
+            self.getFirebaseCandyInformation()
 
+        self.selectedCandy = None
         self.stateFile = self.dataDir / "current_state.txt"
 
         self.phases = {
