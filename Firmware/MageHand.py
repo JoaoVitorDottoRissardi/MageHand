@@ -5,6 +5,7 @@ from pathlib import Path # needs python 3.4
 import json
 import requests
 import threading
+import sseclient # sseclient-py
 from dataclasses import dataclass # needs python 3.7
 
 """
@@ -61,7 +62,7 @@ phases: dict
 """
 
 class MageHand:
-    firebase_url = ""
+    firebase_url = "https://mage-hand-demo-default-rtdb.firebaseio.com/"
     minVolume = 10
     maxCupVolume = 100
     volumePerTurn = 10
@@ -72,6 +73,8 @@ class MageHand:
         self.machine = Machine(params["displayParameters"], params["servoParameters"], params["motorParameters"])
         self.gestureRecognizer = GestureRecognizer()
         self.paymentManager = PaymentManager()
+
+        self.firebaseThread = threading.Thread(target=self.firebaseCallbackFunction)
 
         self.dataDir = Path("/var/lib/MageHand")
         self.dataDir.mkdir(exist_ok=True)
@@ -103,6 +106,8 @@ class MageHand:
         lastPhase = self.stateFile.read_text()
 
         self.getFirebaseCandyInformation()
+        self.firebaseThread.start()
+
         if lastPhase == "payment":
             self.machine.acceptCandies()
         else:
@@ -345,7 +350,17 @@ class MageHand:
         Function to set up firebase listener
     """
     def firebaseCallbackFunction(self):
-        pass
+        response = requests.get(MageHand.firebase_url, stream=True, headers={"Accept": "text/event-stream"})
+        client = sseclient.SSEClient(response)
+        for event in client.events():
+            data = json.loads(event.data)
+            match event.event:
+                case "put":
+                    print("put: " + data)
+                case "patch":
+                    print("patch: " + data)
+
+
 
     def getFirebasePaymentKeys(self):
         response = requests.get(MageHand.firebase_url + "/paymentKeys.json")
