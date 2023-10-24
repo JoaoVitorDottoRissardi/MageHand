@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 """
 Class for handling the display functions
@@ -71,7 +72,7 @@ class Display:
         self.screen_info = pygame.display.Info()
         self.screen_width = self.screen_info.current_w
         self.screen_height = self.screen_info.current_h
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE if "--test" in sys.argv else pygame.FULLSCREEN)
 
         #Load images and scale them to fit the specified size
         self.images = {}

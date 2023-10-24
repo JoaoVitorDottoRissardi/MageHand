@@ -1,13 +1,17 @@
-from Display import Display
-from Motor import Motor
-from Servo import Servo
+# from Display import Display
+# from Motor import Motor
+# from Servo import Servo
 
-import mediapipe as mp
-import cv2
+# import mediapipe as mp
+# import cv2
 from pose.utils.FingerPoseEstimate import FingerPoseEstimate
 from pose.DeterminePositions import create_known_finger_poses, determine_position, get_position_name_with_pose_id
 import operator
 import time
+import sys
+import os
+import termios
+import fcntl
 
 """
 Class that provides the means to run gesture detection for gestures of interest,
@@ -35,22 +39,22 @@ class GestureRecognizer:
 
     def __init__(self):
 
-        self.cap = cv2.VideoCapture(0)
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
-        
-        BaseOptions = mp.tasks.BaseOptions
-        HandLandmarker = mp.tasks.vision.HandLandmarker
-        HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
-        VisionRunningMode = mp.tasks.vision.RunningMode
+        # self.cap = cv2.VideoCapture(0)
+        # self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
+
+        # BaseOptions = mp.tasks.BaseOptions
+        # HandLandmarker = mp.tasks.vision.HandLandmarker
+        # HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
+        # VisionRunningMode = mp.tasks.vision.RunningMode
 
         self.known_finger_poses = create_known_finger_poses()
 
-        # Create a hand landmarker instance with the video mode:
-        options = HandLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path='./hand_landmarker.task'),
-            running_mode=VisionRunningMode.VIDEO)
+        # # Create a hand landmarker instance with the video mode:
+        # options = HandLandmarkerOptions(
+        #     base_options=BaseOptions(model_asset_path='./hand_landmarker.task'),
+        #     running_mode=VisionRunningMode.VIDEO)
 
-        self.landmarker = HandLandmarker.create_from_options(options)
+        # self.landmarker = HandLandmarker.create_from_options(options)
 
 
     """
@@ -59,7 +63,7 @@ class GestureRecognizer:
     """
 
     def __del__(self):
-        self.landmarker.close()
+        # self.landmarker.close()
         pass
 
     """
@@ -149,39 +153,26 @@ class GestureRecognizer:
         # curr_idx = 0
         detected_gestures = []
         confirmation_time_delta = 4 # in seconds
+        fd = sys.stdin.fileno()
 
+        oldterm = termios.tcgetattr(fd)
+        newattr = termios.tcgetattr(fd)
+        newattr[3] = newattr[3] & ~termios.ICANON & ~termios.ECHO
+        termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+        oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
         while True:
-            ret, frame = self.cap.read()
-            timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
-            frame1 = cv2.resize(frame, (640, 480)) 
-            mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame1)
-            hand_landmarker_result = self.landmarker.detect_for_video(mp_image, int(timestamp))
-            
-            # magic conversion to expected landmarks format
-            landmarks = []
-            Xpositions = []
-            for xablau in hand_landmarker_result.hand_landmarks:
-                # print(xablau)
-                for landmark in xablau:
-                    l = []
-                    l.append(landmark.x)
-                    l.append(landmark.y)
-                    l.append(landmark.z)
-                    landmarks.append(l)
-                    Xpositions.append(landmark.x)
-            
-            score_label = 'Undefined'
-            if landmarks != []:
-                score_label = predict_by_geometry([landmarks], self.known_finger_poses, 0.45)
-            else:
-                score_label = "None"
+            c = sys.stdin.read(1)
 
-
+            score_label = gestures_of_interest[int(c) % len(gestures_of_interest)]
+            print(c +": " + score_label)
+            Xpositions = [20]
             if in_confirmation == 'No':
                 if score_label != last_gesture:
                     last_gesture = score_label
                     current_gesture_count = 0
-                
+
                 if score_label in gestures_of_interest:
                     current_gesture_count += 1
 
@@ -212,13 +203,6 @@ class GestureRecognizer:
                         in_confirmation = 'No'
                         last_gesture = 'Undefined'
                         current_gesture_count = 0
-
-
-            # detected_gestures[curr_idx] = score_label
-            # curr_idx = (curr_idx + 1) % times_to_really_detect
-
-
-            # print(score_label)
 
     """
         Function to decide, based on the list of the detected gestures, if the gesture
