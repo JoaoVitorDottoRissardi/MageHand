@@ -10,3 +10,10 @@ install-python:
 
 config:
 	install -v -D -t $(XDG_CONFIG_HOME)/MageHand MageHandParameters.json
+
+# rsync
+remote:
+	rsync -av * magehand@raspberrypi:/home/magehand/MageHand/Firmware
+
+remote-all:
+	rsync -av ../* magehand@raspberrypi:/home/magehand/MageHand
