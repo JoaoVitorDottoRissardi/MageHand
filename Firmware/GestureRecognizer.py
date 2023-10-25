@@ -1,7 +1,3 @@
-from Display import Display
-from Motor import Motor
-from Servo import Servo
-
 import mediapipe as mp
 import cv2
 from pose.utils.FingerPoseEstimate import FingerPoseEstimate
@@ -260,3 +256,18 @@ class GestureRecognizer:
         
         # the confirmation can keep going
         return False
+
+if __name__ == "__main__":
+    import pygame
+    g = GestureRecognizer()
+    gestures = ["ThumbsUp", "ThumbsDown", "Peace", "Stop", "Fist"]
+    pathImages = {"ThumbsUp": "./images/thumbs_up.png", "ThumbsDown": "./images/thumbs_down.png","Peace": "./images/peace.png", "Stop": "./images/stop.png", "Fist": "./images/fist.png"}
+    pygame.init()
+    images = {k:pygame.image.load(v) for k,v in pathImages}
+    screen = pygame.display.set_mode((480,320), pygame.RESIZABLE)
+    def showGesture(gesture):
+        def show():
+            screen.blit(images[gesture], 50, 50)
+            return "state"
+        return show
+    g.runState("state", gestures, {k:showGesture(k) for k in gestures}, [], {})
