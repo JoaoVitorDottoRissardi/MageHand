@@ -1,6 +1,13 @@
+import sys
 from Display import Display
-from Motor import Motor
-from Servo import Servo
+if "--test" in sys.argv:
+    from Test.Motor import Motor
+else:
+    from Motor import Motor
+if "--test" in sys.argv:
+    from Test.Servo import Servo
+else:
+    from Servo import Servo
 from time import sleep
 
 """
@@ -56,27 +63,27 @@ class Machine:
         )
 
         self.servo1 = Servo(
-            servoParameters[1]['pin'],
-            servoParameters[1]['angleStep'],
-            servoParameters[1]['speed']
+            servoParameters['1']['pin'],
+            servoParameters['1']['angleStep'],
+            servoParameters['1']['speed']
         )
 
         self.servo2 = Servo(
-            servoParameters[2]['pin'],
-            servoParameters[2]['angleStep'],
-            servoParameters[2]['speed']
+            servoParameters['2']['pin'],
+            servoParameters['2']['angleStep'],
+            servoParameters['2']['speed']
         )
 
         self.motor1 = Motor(
-            motorParameters[1]['forward'],
-            motorParameters[1]['backward'],
-            motorParameters[1]['speed']
+            motorParameters['1']['forward'],
+            motorParameters['1']['backward'],
+            motorParameters['1']['speed']
         )
 
         self.motor2 = Motor(
-            motorParameters[2]['forward'],
-            motorParameters[2]['backward'],
-            motorParameters[2]['speed']
+            motorParameters['2']['forward'],
+            motorParameters['2']['backward'],
+            motorParameters['2']['speed']
         )
 
         # self.servo1 = None

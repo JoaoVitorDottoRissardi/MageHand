@@ -1,0 +1,8 @@
+[Unit]
+Description=Systemd service for starting the mage hand firmware
+
+[Service]
+ExecStart=/usr/local/bin/MageHand/MageHand.py
+
+[Install]
+WantedBy=graphical-session.target
