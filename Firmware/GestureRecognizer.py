@@ -1,4 +1,5 @@
 import mediapipe as mp
+import numpy as np
 import cv2
 from pose.utils.FingerPoseEstimate import FingerPoseEstimate
 from pose.DeterminePositions import create_known_finger_poses, determine_position, get_position_name_with_pose_id
@@ -31,7 +32,9 @@ class GestureRecognizer:
 
     def __init__(self):
 
-        self.cap = cv2.VideoCapture(0)
+        self.cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        if not self.cap.isOpened():
+            raise Exception('a')
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
         
         BaseOptions = mp.tasks.BaseOptions
@@ -149,6 +152,7 @@ class GestureRecognizer:
         while True:
             ret, frame = self.cap.read()
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
+            timestamp = time.monotonic_ns()
             frame1 = cv2.resize(frame, (640, 480)) 
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame1)
             hand_landmarker_result = self.landmarker.detect_for_video(mp_image, int(timestamp))
@@ -168,9 +172,10 @@ class GestureRecognizer:
             
             score_label = 'Undefined'
             if landmarks != []:
-                score_label = predict_by_geometry([landmarks], self.known_finger_poses, 0.45)
+                score_label = self.predict_by_geometry([landmarks], self.known_finger_poses, 0.45)
             else:
                 score_label = "None"
+
 
 
             if in_confirmation == 'No':
@@ -183,7 +188,7 @@ class GestureRecognizer:
 
                 if current_gesture_count >= times_to_really_detect:
                     # print(f"starting detection of '{score_label}'")
-                    new_state = gesture_started_callbacks[score_label](Xpositions=Xpositions)
+                    new_state = gesture_started_callbacks[score_label](Xpositions=Xpositions, frame=frame1)
                     if new_state != state:
                         return new_state
 
@@ -260,14 +265,25 @@ class GestureRecognizer:
 if __name__ == "__main__":
     import pygame
     g = GestureRecognizer()
-    gestures = ["ThumbsUp", "ThumbsDown", "Peace", "Stop", "Fist"]
+    gestures = ["ThumbsUp", "ThumbsDown", "Peace", "Stop", "Fist", "None"]
     pathImages = {"ThumbsUp": "./images/thumbs_up.png", "ThumbsDown": "./images/thumbs_down.png","Peace": "./images/peace.png", "Stop": "./images/stop.png", "Fist": "./images/fist.png"}
     pygame.init()
-    images = {k:pygame.image.load(v) for k,v in pathImages}
+    images = {k:pygame.image.load(v) for k,v in pathImages.items()}
     screen = pygame.display.set_mode((480,320), pygame.RESIZABLE)
     def showGesture(gesture):
-        def show():
-            screen.blit(images[gesture], 50, 50)
+        if gesture == "None":
+            def c(frame, **kargs):
+                frame=cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
+                frame = np.rot90(frame)
+                screen.blit(pygame.surfarray.make_surface(frame), (0,0))
+                pygame.display.update()
+                return "state"
+            return c
+        def show(**kargs):
+            screen.fill([255,255,255])
+            image = pygame.transform.scale_by(images[gesture], 0.2)
+            screen.blit(image, (50, 50))
+            pygame.display.update()
             return "state"
         return show
     g.runState("state", gestures, {k:showGesture(k) for k in gestures}, [], {})
