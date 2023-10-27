@@ -73,7 +73,6 @@ class MageHand:
     def __init__(self):
         config = (Path.home() / ".config/MageHand/MageHandParameters.json").read_text()
         params = json.loads(config)
-        print(params)
 
         self.machine = Machine(params["displayParameters"], params["servoParameters"], params["motorParameters"])
         self.gestureRecognizer = GestureRecognizer()
@@ -129,8 +128,8 @@ class MageHand:
     """
     def introductionPhaseFunction(self):
         self.stateFile.write_text("introduction")
-        self.cupVolume1 = 0
-        self.cupVolume2 = 0
+        self.cupVolume1 = [0]
+        self.cupVolume2 = [0]
 
         if not self.paymentManager.hasPaymentKeys():
             self.machine.showGestureMessage('There are no payment keys configured \n Cannot proceed', 'Alert', [])
@@ -173,7 +172,7 @@ class MageHand:
             self.machine.showGestureMessage("Thumbs Up detected, hold for 4 seconds", "Info", ["ThumbsUp"])
             return "selection"
         def thumbsDown_callback(**kargs):
-            self.machine.showGestureMessage("Thumbs Down detected, hold for 4 seconds", "Info", ["ThumbsUp"])
+            self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds", "Info", ["ThumbsUp"])
             return "selection"
         def none_callback(**kargs):
             self.machine.showGestureMessage("Lost track of hand", "Alert", [])
@@ -203,18 +202,18 @@ class MageHand:
     """
     def pouringPhaseFunction(self):
         self.stateFile.write_text("pouring")
-        self.machine.showGestureMessage("Show a Fist to pour the candy into cup", "Info", ["Fist"])
+        self.machine.showGestureMessage("Show a Fist to pour \n the candy into cup", "Info", ["Fist"])
 
         def thumbsDown_callback(**kargs):
             self.machine.stopPouringCandy(self.selectedCandy)
-            self.machine.showGestureMessage("Thumbs Down detected, hold it for 4 seconds", "Confirm", ["ThumbsDown"])
+            self.machine.showGestureMessage("Thumbs Down detected \n hold it for 4 seconds", "Confirm", ["ThumbsDown"])
             return "pouring"
         def fist_callback(**kargs):
 
             cup = self.cupVolume1 if self.selectedCandy == 1 else self.cupVolume2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
 
-            if cup > self.maxCupVolume:
+            if cup[0] > self.maxCupVolume:
                 self.machine.showGestureMessage("The cup will overflow", "Alert", [])
                 self.machine.stopPouringCandy(self.selectedCandy)
                 return "pouring"
@@ -224,9 +223,9 @@ class MageHand:
                 self.machine.stopPouringCandy(self.selectedCandy)
                 return "pouring"
 
-            self.machine.showBuyingMessage("", ["Candy" + str(self.selectedCandy)])
+            self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]} of {self.maxCupVolume} \n Available: {c.volume}\n Total price: {cup[0]*c.price}", ["Candy" + str(self.selectedCandy)])
             self.machine.pourCandy(self.selectedCandy)
-            cup += MageHand.volumePerTurn
+            cup[0] += MageHand.volumePerTurn
             c.volume -= MageHand.volumePerTurn
             return "pouring"
 
@@ -316,7 +315,7 @@ class MageHand:
         successEvent = threading.Event()
         failureEvent = threading.Event()
         gestureEvent = threading.Event()
-        amount = (self.candy1.price * self.cupVolume1) + (self.candy2.price * self.cupVolume2)
+        amount = (self.candy1.price * self.cupVolume1[0]) + (self.candy2.price * self.cupVolume2[0])
         if "--test" not in sys.argv:
             self.paymentManager.createPayment(amount=amount, description="candy bought with mage hand")
 
@@ -367,6 +366,7 @@ class MageHand:
     def firebaseCallbackFunction(self):
         response = requests.get(MageHand.firebase_url, stream=True, headers={"Accept": "text/event-stream"})
         client = sseclient.SSEClient(response)
+        print("Firebase notifications are now enabled")
         for event in client.events():
             data = json.loads(event.data)
             match event.event:
