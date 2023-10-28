@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Alert from '@mui/material/Alert';
 // import { initializeApp } from 'firebase/app';
 // import { getAuth } from 'firebase/auth';
 // import { getDatabase } from 'firebase/database';
@@ -9,10 +10,15 @@ import EditPaymentKeys from './components/EditPaymentKeys';
 import SeePurchaseHistory from './components/SeePurchaseHistory'; 
 import ChangePassword from './components/ChangePassword'; 
 import EditCandy from './components/EditCandy';
+import ReplenishCandy from './components/ReplenishCandy';
+
+export function ErrorMessage({message}){
+  return (
+    <Alert severity="error" sx={{ width:"40%", margin: "auto"}}>{message}</Alert>
+  );
+}
 
 function App() {
-  // const user = firebase.auth().currentUser;
-
   return (
     <Router>
       <Routes>
@@ -22,6 +28,7 @@ function App() {
         <Route path="/editpaymentkeys" element={<EditPaymentKeys/>} />
         <Route path="/purchasehistory" element={<SeePurchaseHistory/>} />
         <Route path="/changepassword" element={<ChangePassword/>} />
+        <Route path="/replenishcandy" element={<ReplenishCandy/>} />
       </Routes>
     </Router>
   );

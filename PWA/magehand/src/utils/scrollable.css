@@ -1,0 +1,42 @@
+/* Add this to your CSS */
+.scrollable-container {
+    max-height: calc(100vh - 300px); /* Adjust the value as needed */
+    overflow-y: auto;
+  }
+  
+  .scrollable-container::-webkit-scrollbar {
+    width: 12px; /* Adjust the width as needed */
+  }
+  
+  .scrollable-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      to bottom, /* Change direction to bottom */
+      rgba(130, 65, 181, 0.8), /* Violet */
+      rgba(61, 43, 99, 0.8), /* Indigo */
+      rgba(55, 97, 160, 0.8), /* Blue */
+      rgba(59, 153, 90, 0.8), /* Green */
+      rgba(170, 175, 59, 0.8), /* Yellow */
+      rgba(204, 138, 44, 0.8), /* Orange */
+      rgba(201, 37, 44, 0.8) /* Red */
+    );
+  }
+  
+  .scrollable-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  /* Add vendor-specific scrollbar styles for Firefox */
+  .scrollable-container {
+    scrollbar-width: thin;
+    scrollbar-color: linear-gradient(
+      to right,
+      violet,
+      indigo,
+      blue,
+      green,
+      yellow,
+      orange,
+      red
+    ) transparent;
+  }
+  

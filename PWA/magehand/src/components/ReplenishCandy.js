@@ -10,17 +10,14 @@ import CircularProgress from '@mui/material/CircularProgress';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'; 
 import '../assets/CustomFonts.css'
 
-function ChangePassword() {
+function ReplenishCandy() {
   const navigate = useNavigate();
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmedPassword, setConfirmedPassword] = useState('');
+  const [candy1Volume, setCandy1Volume] = useState(null);
+  const [candy2Volume, setCandy2Volume] = useState(null);
   const [open, setOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmedPassword, setShowConfirmedPassword] = useState(false);
   const [loginTimeout, setLoginTimeout] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(true);
-  const auth = getAuth(app);
 
   useEffect(() => {
     if (loginTimeout) {
@@ -32,30 +29,8 @@ function ChangePassword() {
     }
   }, [loginTimeout, navigate]);
 
-  const saveNewPassword = () => {
-    if(newPassword === confirmedPassword){
-      updatePassword(auth.currentUser, newPassword)
-        .then(() => {
-          console.log('Senha atualizada!');
-          setSnackbarMessage('Password updated successfully!');
-          setOpen(true);
-          setUpdateSuccessful(true);
-        })
-        .catch(error => {
-          console.error('Error updating password:', error);
-          setSnackbarMessage(authErrorCodes[error.code]);
-          setOpen(true);
-          setUpdateSuccessful(false);
-          if(error.code === 'auth/requires-recent-login'){
-            setLoginTimeout(true);
-          }
-        })
-    }
-    else{
-      setSnackbarMessage('Error: passwords don\'t match!');
-      setOpen(true);
-      setUpdateSuccessful(false);
-    }
+  const saveReplenishCandy = () => {
+    
   };
 
   const handleClose = (event, reason) => {
@@ -77,59 +52,35 @@ function ChangePassword() {
             display="flex" 
             flexDirection="column" 
         >
-          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Change Password 🔐</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Replenish Candy 📦</Typography>
           <TextField
-            label="New Password"
-            type={showPassword ? 'text' : 'password'} 
+            label="Candy 1 volume (mL)"
             variant="standard"
             fullWidth
+            type='number'
             sx={{fontFamily: 'PlaypenSans'}} 
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            value={candy1Volume}
+            onChange={(e) => setCandy1Volume(e.target.value)}
             margin="normal"
-            InputProps={{
-              endAdornment: ( 
-                <InputAdornment position="end">
-                  <IconButton
-                    edge="end"
-                    onClick={() => setShowPassword(!showPassword)} 
-                  >
-                    {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
           />
           <TextField
-            label="Confirm New Password"
-            type={showConfirmedPassword ? 'text' : 'password'} 
+            label="Candy 2 volume (mL)"
             variant="standard"
             fullWidth
+            type='number'
             sx={{fontFamily: 'PlaypenSans'}} 
-            value={confirmedPassword}
-            onChange={(e) => setConfirmedPassword(e.target.value)}
+            value={candy2Volume}
+            onChange={(e) => setCandy2Volume(e.target.value)}
             margin="normal"
-            InputProps={{
-              endAdornment: ( 
-                <InputAdornment position="end">
-                  <IconButton
-                    edge="end"
-                    onClick={() => setShowConfirmedPassword(!showConfirmedPassword)} 
-                  >
-                    {showConfirmedPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
           />
             <Button 
               variant="contained" 
               fullWidth
               sx={{fontFamily: 'PlaypenSans'}}  
-              onClick={saveNewPassword} 
+              onClick={saveReplenishCandy} 
               endIcon={<CheckIcon />}
             >
-                Update password
+                Replenish Candy
             </Button>
             <Button 
               variant="contained"
@@ -151,4 +102,4 @@ function ChangePassword() {
   );
 }
 
-export default ChangePassword;
+export default ReplenishCandy;

@@ -1,0 +1,15 @@
+@font-face {
+    font-family: 'AbrilFatface'; 
+    src: url('AbrilFatface-Regular.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'PlaypenSans';
+  src: url('PlaypenSans-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'IndieFlower';
+  src: url('IndieFlower-Regular.ttf') format('truetype');
+}
+  
