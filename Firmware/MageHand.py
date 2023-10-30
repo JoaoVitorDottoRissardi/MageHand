@@ -9,6 +9,7 @@ from pathlib import Path # needs python 3.4
 import json
 import requests
 import threading
+import datetime
 import sseclient # sseclient-py
 from dataclasses import dataclass # needs python 3.7
 
@@ -71,6 +72,7 @@ class MageHand:
     maxCupVolume = 100
     volumePerTurn = 10
     def __init__(self):
+        self.user = "kJyBx6wkKxblBQZn1Xc1BDLikH93"
         config = (Path.home() / ".config/MageHand/MageHandParameters.json").read_text()
         params = json.loads(config)
 
@@ -95,6 +97,8 @@ class MageHand:
 
         self.selectedCandy = None
         self.stateFile = self.dataDir / "current_state.txt"
+        self.cupVolume1 = [0]
+        self.cupVolume2 = [0]
 
         self.phases = {
             "boot": self.bootPhaseFunction,
@@ -105,6 +109,44 @@ class MageHand:
             "decision": self.decisionPhaseFunction,
             "payment": self.paymentPhaseFunction
         }
+
+    def rejectCandies(self, reason):
+        self.machine.rejectCandies()
+        date = datetime.datetime.now()
+        index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
+        histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
+            "Candy1Name": self.candy1.name,
+            "Candy2Name": self.candy2.name,
+            "Price1": self.candy1.price,
+            "Price2": self.candy2.price,
+            "Quantity1": self.cupVolume1[0],
+            "Quantity2": self.cupVolume2[0],
+            "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
+            "AdditionalInfo": reason,
+            "Status": "Rejected",
+            "Index": index+1
+        }},
+         "OrderCount": index+1           }
+        response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
+
+    def acceptCandies(self, reason):
+        self.machine.acceptCandies()
+        date = datetime.datetime.now()
+        index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
+        histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
+            "Candy1Name": self.candy1.name,
+            "Candy2Name": self.candy2.name,
+            "Price1": self.candy1.price,
+            "Price2": self.candy2.price,
+            "Quantity1": self.cupVolume1[0],
+            "Quantity2": self.cupVolume2[0],
+            "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
+            "AdditionalInfo": reason,
+            "Status": "Successful",
+            "Index": index+1
+        }},
+         "OrderCount": index+1           }
+        response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
 
     """
         Function to initiate the boot phase
@@ -118,7 +160,7 @@ class MageHand:
         if lastPhase == "payment":
             self.machine.acceptCandies()
         else:
-            self.machine.rejectCandies()
+            self.rejectCandies()
 
         return "introduction"
 
@@ -180,7 +222,7 @@ class MageHand:
 
         thumbsUp_confirmationCallback = lambda **kargs: "pouring"
         def thumbsDown_None_confirmationCallback(**kargs):
-            self.machine.rejectCandies()
+            self.rejectCandies()
             return "introduction"
 
         return self.gestureRecognizer.runState("selection",
@@ -243,11 +285,11 @@ class MageHand:
             return "pouring"
 
         def thumbsDown_confirmationCallback(**kargs):
-            self.machine.rejectCandies()
+            self.rejectCandies("Order was cancelled in Pouring phase")
             return "introduction"
         stop_confirmationCallback = lambda **kargs: "decision"
         def none_confirmationCallback(**kargs):
-            self.machine.rejectCandies()
+            self.rejectCandies("Lost track of customer in Pouring phase")
             return "introduction"
 
 
@@ -282,14 +324,14 @@ class MageHand:
             return "decision"
 
         def thumbsDown_confirmationCallback(**kargs):
-            self.machine.rejectCandies()
+            self.rejectCandies("Order was cancelled in decision phase")
             return "introduction"
 
         thumbsUp_confirmationCallback = lambda **kargs: "payment"
         peace_confirmationCallback = lambda **kargs: "selection"
 
         def none_confirmationCallback(**kargs):
-            self.machine.rejectCandies()
+            self.rejectCandies("Lost track of customer in decision phase")
             return "introduction"
 
         return self.gestureRecognizer.runState("decision",
@@ -352,10 +394,10 @@ class MageHand:
 
         if successEvent.is_set():
             self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
-            self.machine.acceptCandies()
+            self.acceptCandies("Payment Successfull")
         else:
             self.machine.showGestureMessage("Order was canceled", "Alert", [])
-            self.machine.rejectCandies()
+            self.rejectCandies("Order was cancelled")
 
 
         return "introduction"
