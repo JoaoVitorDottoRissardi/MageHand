@@ -15,7 +15,7 @@ config:
 	touch $(XDG_CONFIG_HOME)/MageHand/current_state.txt
 
 set-var:
-	install -v -d -m 0755 -o magehand -g users /var/lib/Magehand
+	install -v -d -m 0755 -o magehand -g users /var/lib/MageHand
 
 # rsync
 remote:
@@ -23,3 +23,7 @@ remote:
 
 remote-all:
 	rsync -av ../* magehand@raspberrypi:/home/magehand/MageHand
+
+run:
+	GPIOZERO_PIN_FACTORY=pigpio DISPLAY=:0.0 python MageHand.py
+	

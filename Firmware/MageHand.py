@@ -178,7 +178,12 @@ class MageHand:
             self.getFirebasePaymentKeys()
 
         self.machine.showGestureMessage('Make a Stop sign to proceed', 'Info', ['Stop'])
-        return self.gestureRecognizer.runState("introduction", ["Stop"], {}
+
+        def none_callback(frame, **kargs):
+            self.machine.showImage(frame)
+            return 'introduction'
+        
+        return self.gestureRecognizer.runState("introduction", ["Stop", "None"], {"None": none_callback}
                                         , ["Stop"],{"Stop": lambda **kargs: "confirmation"})
 
 
@@ -198,7 +203,7 @@ class MageHand:
         self.stateFile.write_text("selection")
         self.machine.showGestureMessage('Select a Candy Type', 'Info', ["ThumbsUp"])
 
-        def undefined_callback(Xpositions):
+        def undefined_callback(Xpositions, **kargs):
             mean = sum(Xpositions) / len(Xpositions)
 
             self.selectedCandy = 1 if mean < 320 else 2
@@ -210,31 +215,31 @@ class MageHand:
                 self.machine.showGestureMessage(f"There is no {c.name} left, please choose another type", "Alert", [])
             return "selection"
 
-        def thumbsUp_callback(**kargs):
-            self.machine.showGestureMessage("Thumbs Up detected, hold for 4 seconds", "Info", ["ThumbsUp"])
+        def peace_callback(**kargs):
+            self.machine.showGestureMessage("Peace detected, hold for 4 seconds", "Info", ["Peace"])
             return "selection"
         def thumbsDown_callback(**kargs):
-            self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds", "Info", ["ThumbsUp"])
+            self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds", "Info", ["ThumbsDown"])
             return "selection"
         def none_callback(**kargs):
             self.machine.showGestureMessage("Lost track of hand", "Alert", [])
             return "selection"
 
-        thumbsUp_confirmationCallback = lambda **kargs: "pouring"
+        peace_confirmationCallback = lambda **kargs: "pouring"
         def thumbsDown_None_confirmationCallback(**kargs):
             self.rejectCandies("Lost track of user")
             return "introduction"
 
         return self.gestureRecognizer.runState("selection",
-                ["Undefined", "None", "ThumbsUp", "ThumbsDown"]
+                ["Undefined", "None", "Peace", "ThumbsDown"]
                 , { "Undefined": undefined_callback,
                     "None": none_callback,
-                    "ThumbsUp": thumbsUp_callback,
+                    "Peace": peace_callback,
                     "ThumbsDown": thumbsDown_callback
                 },
-                ["ThumbsUp", "ThumbsDown", "None"] ,
+                ["Peace", "ThumbsDown", "None"] ,
                 {
-                    "ThumbsUp": thumbsUp_confirmationCallback,
+                    "Peace": peace_confirmationCallback,
                     "ThumbsDown": thumbsDown_None_confirmationCallback,
                     "None": thumbsDown_None_confirmationCallback
                 })
@@ -411,11 +416,10 @@ class MageHand:
         print("Firebase notifications are now enabled")
         for event in client.events():
             data = json.loads(event.data)
-            match event.event:
-                case "put":
-                    print("put: " + data)
-                case "patch":
-                    print("patch: " + data)
+            if event.event == 'put':
+                print("put: " + data)
+            elif event.event == "patch":
+                print("patch: " + data)
 
 
 

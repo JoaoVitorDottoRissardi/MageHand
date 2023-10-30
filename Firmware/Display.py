@@ -235,3 +235,10 @@ class Display:
             counter.update({self.images[image]['type'] : counter[self.images[image]['type']]+1})
         self.displayTextCentered(self.screen, message, font, self.colors['Text'])
         pygame.display.flip()
+
+        
+    def showImage(self, image):
+        background_color = self.colors['Background']
+        self.screen.fill(background_color)
+        self.screen.blit(pygame.surfarray.make_surface(image), (0,0))
+        pygame.display.flip()

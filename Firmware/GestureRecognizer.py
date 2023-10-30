@@ -32,7 +32,7 @@ class GestureRecognizer:
 
     def __init__(self):
 
-        self.cap = cv2.VideoCapture(1, cv2.CAP_DSHOW)
+        self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             raise Exception('a')
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)

@@ -101,7 +101,7 @@ class Machine:
 
     def acceptCandies(self):
         self.servo1.spinTo(90)
-        self.servo2.spinTo(90)
+        self.servo2.spinTo(-90)
         sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)
@@ -113,7 +113,7 @@ class Machine:
 
     def rejectCandies(self):
         self.servo1.spinTo(-90)
-        self.servo2.spinTo(-90)
+        self.servo2.spinTo(90)
         sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)
@@ -234,6 +234,9 @@ class Machine:
 
     def updateCandyImage(self, candy):
         self.display.updateImage(candy)
+
+    def showImage(self, image):
+        self.display.showImage(image)
 
 # print("Oi")
 
