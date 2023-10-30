@@ -160,7 +160,7 @@ class MageHand:
         if lastPhase == "payment":
             self.machine.acceptCandies()
         else:
-            self.rejectCandies()
+            self.rejectCandies("System was not in payment during last shutdown")
 
         return "introduction"
 
@@ -222,7 +222,7 @@ class MageHand:
 
         thumbsUp_confirmationCallback = lambda **kargs: "pouring"
         def thumbsDown_None_confirmationCallback(**kargs):
-            self.rejectCandies()
+            self.rejectCandies("Lost track of user")
             return "introduction"
 
         return self.gestureRecognizer.runState("selection",
