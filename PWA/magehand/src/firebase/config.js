@@ -13,14 +13,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 const authErrorCodes = {
-    'auth/email-already-in-use' : "Error: email already in use!",
-    'auth/invalid-email' : "Error: invalid email!",
-    'auth/invalid-password' : "Error: invalid password!",
-    'auth/weak-password' : "Error: weak password!",
-    'auth/invalid-login-credentials' : 'Error: invalid login credentials!',
-    'auth/missing-password': 'Error: missing password!',
-    'auth/too-many-requests': 'Error: too many requests, login temporarily blocked!',
-    'auth/requires-recent-login': 'Error: login timeout. Redirecting to login page!',
+  'auth/email-already-in-use' : "Error: email already in use!",
+  'auth/invalid-email' : "Error: invalid email!",
+  'auth/invalid-password' : "Error: invalid password!",
+  'auth/weak-password' : "Error: weak password!",
+  'auth/invalid-login-credentials' : 'Error: invalid login credentials!',
+  'auth/missing-password': 'Error: missing password!',
+  'auth/too-many-requests': 'Error: too many requests, login temporarily blocked!',
+  'auth/requires-recent-login': 'Error: login timeout. Redirecting to login page!',
 }
 
-export {app, authErrorCodes}
+const storageErrorCodes = {
+  'storage/object-not-found' : "Warning: candy image was not found. Please set up one."
+}
+
+export {app, authErrorCodes, storageErrorCodes}
