@@ -20,15 +20,11 @@ function Login() {
   const auth = getAuth(app);
 
   const handleLogin = () => {
-    // navigate('/main');
-    console.log('Trying to login');
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
         navigate('/main');
-        console.log('User logged');
       })
       .catch(error => {
-        console.error('Login error:', error);
         setSnackbarMessage(authErrorCodes[error.code]);
         setOpen(true);
       });
@@ -101,6 +97,7 @@ function Login() {
               onClick={handleLogin} 
               endIcon={<LoginIcon />} 
               sx={{width:'300px', fontFamily: 'PlaypenSans'}} 
+              disabled={!validEmail}
             >
                 Login
             </Button>
