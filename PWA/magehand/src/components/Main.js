@@ -42,7 +42,7 @@ function Main() {
                     sx={{width:'250px', fontFamily: 'PlaypenSans'}} 
                     color="red"
                 >
-                    Edit Payment Keys
+                    Edit Payment Key
                 </Button>
                 <Button 
                     variant="contained"  
