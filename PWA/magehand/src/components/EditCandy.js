@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Paper, TextField, Stack, Snackbar, Alert, Button } from '@mui/material';
-import {app, authErrorCodes} from '../firebase/config'
+import {app, storageErrorCodes} from '../firebase/config'
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, onValue, get, child, update} from "firebase/database";
+import { getDatabase, ref as databaseRef, get, child, update} from "firebase/database";
+import { getStorage, uploadBytes, ref as storageRef, getDownloadURL } from 'firebase/storage'; 
 import InputAdornment from '@mui/material/InputAdornment';
 import EditIcon from '@mui/icons-material/Edit';
 import Fab from '@mui/material/Fab';
@@ -15,25 +16,36 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CircularProgress from '@mui/material/CircularProgress';
 import { yellow } from '@mui/material/colors';
 import '../assets/CustomFonts.css';
-  
+
+function addDecimalPlaces(number) {
+  const parts = number.split('.');
+  if (parts.length === 1) {
+    return number + '.00';
+  } else if (parts[1].length === 1) {
+    return number + '0';
+  } else {
+    return number;
+  }
+}
+
 function EditCandy() {
 
   const navigate = useNavigate();
   const auth = getAuth(app);
-  const dbRef = ref(getDatabase(app));
+  const dbRef = databaseRef(getDatabase(app));
 
   const[candy1, setCandy1] = useState({
-    name: 'Candy 1',
+    name: '',
     price: 0,
-    photo: null,
-    base64Image: null, 
+    url: null,
+    file: null,
   })
   
   const[candy2, setCandy2] = useState({
-    name: 'Candy 2',
+    name: '',
     price: 0,
-    photo: null,
-    base64Image: null,
+    url: null,
+    file: null,
   })
 
   const [editingCandy1, setEditingCandy1] = useState(false);
@@ -53,21 +65,20 @@ function EditCandy() {
   const [open, setOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [loginTimeout, setLoginTimeout] = useState(false);
-  const [updateSuccessful, setUpdateSuccessful] = useState(true);
+  const [alertSeverity, setalertSeverity] = useState('');
 
   useEffect(() => {
     if (loginTimeout) {
       const timeout = setTimeout(() => {
         navigate('/'); 
       }, 5000); 
-
       return () => clearTimeout(timeout); 
     }
   }, [loginTimeout, navigate]);
 
   useEffect(() => {
     if(auth.currentUser === null){
-      setUpdateSuccessful(false);
+      setalertSeverity('error');
       setOpen(true);
       setSnackbarMessage('Error: login timeout. Redirecting to login page!');
       setLoginTimeout(true);
@@ -75,21 +86,40 @@ function EditCandy() {
     }
     
     const uid = auth.currentUser.uid;
+
+    const stRef1 = storageRef(getStorage(app), uid + '/Candy1.jpg');
+    const stRef2 = storageRef(getStorage(app), uid + '/Candy2.jpg');
       
     get(child(dbRef, uid + '/candyInformation')).then( (snapshot) => {
       if(snapshot.exists()){
-        console.log(snapshot.val());
-        setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, photo: atob(snapshot.val().Candy1.Image)});
-        // setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, photo: atob(snapshot.val().Candy2.Image)});
-
-        // setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
-        setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
+        getDownloadURL(stRef1).then((url) => {
+          setCandy1({...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, url : url});
+        }).catch((error) => {
+          setSnackbarMessage(storageErrorCodes[error.code]);
+          setCandy1({...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
+          setalertSeverity('warning');
+          setOpen(true);
+        })
+        getDownloadURL(stRef2).then((url2) => {
+          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, url : url2});
+        }).catch((error) => {
+          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
+          setSnackbarMessage(storageErrorCodes[error.code]);
+          setalertSeverity('warning');
+          setOpen(true);
+        })
       }
       else {
-        console.log("No data available");
+        setSnackbarMessage("No data available");
+        setalertSeverity('error');
+        setOpen(true);
+        return;
       }
     }).catch((error) => {
-      console.error(error);
+      setSnackbarMessage(error.code);
+      setalertSeverity('error');
+      setOpen(true);
+      return;
     })
   }, []);
 
@@ -108,17 +138,11 @@ function EditCandy() {
       const file = e.target.files[0];
       console.log(file)
       if(file && file.type.startsWith('image/')){
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64String = reader.result
-            .replace('data:', '')
-            .replace(/^.+,/, '');
-          setCandy1({...candy1, photo : file, base64Image : base64String});
-        };
-        reader.readAsDataURL(file);
+        setCandy1({...candy1, file: file, url : URL.createObjectURL(file)});
       }
       else{
         setSnackbarMessage('Error: you can only select image files!');
+        setalertSeverity('error');
         setOpen(true);
       }
     };
@@ -132,10 +156,11 @@ function EditCandy() {
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
       if(file && file.type.startsWith('image/')){
-          setCandy2({...candy2, photo : file});
+        setCandy2({...candy2, file: file, url : URL.createObjectURL(file)});
       }
       else{
         setSnackbarMessage('Error: you can only select image files!');
+        setalertSeverity('error');
         setOpen(true);
       }
     };
@@ -155,44 +180,82 @@ function EditCandy() {
   const handleSaveCandies = () => {
     
     if(auth.currentUser === null){
-      setUpdateSuccessful(false);
-      setOpen(true);
       setSnackbarMessage('Error: login timeout. Redirecting to login page!');
+      setalertSeverity('error');
       setLoginTimeout(true);
+      setOpen(true);
       return;
     }
+
+    setEditingCandy1(false);
+    setEditingCandy2(false);
+    setEditingImage1(false);
+    setEditingImage2(false); 
     
     const uid = auth.currentUser.uid;
+
+    if (!(/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(candy1.price))){
+      setSnackbarMessage('Error: invalid format for Candy 1 Price!');
+      setalertSeverity('error');
+      setOpen(true);
+      return;
+    }
+
+    if (!(/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(candy2.price))){
+      setSnackbarMessage('Error: invalid format for Candy 2 Price!');
+      setalertSeverity('error');
+      setOpen(true);
+      return;
+    }
+
+    const stRef1 = storageRef(getStorage(app), uid + '/Candy1.jpg');
+    const stRef2 = storageRef(getStorage(app), uid + '/Candy2.jpg');
     
+    setCandy1({...candy1, price: addDecimalPlaces(candy1.price)})
+    setCandy2({...candy2, price: addDecimalPlaces(candy2.price)})
+
     const newCandy1 = {
       Name: candy1.name,
-      Price: candy1.price,
-      Image: candy1.base64Image,
+      Price: addDecimalPlaces(candy1.price),
     };
 
     const newCandy2 = {
       Name: candy2.name,
-      Price: candy2.price,
+      Price: addDecimalPlaces(candy2.price),
     };
 
     const updates = {};
-    updates['/' + uid + '/candyInformation/Candy1'] = newCandy1;
-    updates['/' + uid + '/candyInformation/Candy2'] = newCandy2;
+    updates['/' + uid + '/candyInformation/Candy1/Name'] = newCandy1.Name;
+    updates['/' + uid + '/candyInformation/Candy1/Price'] = newCandy1.Price;
+    updates['/' + uid + '/candyInformation/Candy2/Name'] = newCandy2.Name;
+    updates['/' + uid + '/candyInformation/Candy2/Price'] = newCandy2.Price;
+
 
     update(dbRef, updates).then( (update) => {
-      console.log(update);
-      setUpdateSuccessful(true);
+      setalertSeverity('success');
       setOpen(true);
-      setSnackbarMessage('Update successful!');
+      setSnackbarMessage('Candies updated successfully!');
+      if(candy1.file !== null){
+        uploadBytes(stRef1, candy1.file).then((snapshot) => { 
+        }).catch((error) => {
+          setSnackbarMessage(error.code);
+          setalertSeverity('error');
+          setOpen(true);
+        })
+      }
+      if(candy2.file !== null){
+        uploadBytes(stRef2, candy2.file).then((snapshot) => {
+        }).catch((error) => {
+          setSnackbarMessage(error.code);
+          setalertSeverity('error');
+          setOpen(true);
+        }) 
+      }
     }).catch((error) => {
-      console.error(error);
-      setUpdateSuccessful(false);
+      setSnackbarMessage(error.code);
+      setalertSeverity('error');
       setOpen(true);
-      setSnackbarMessage(error);
     })
-
-    setEditingCandy1(false);
-    setEditingCandy2(false); 
   };
 
   return (
@@ -232,7 +295,11 @@ function EditCandy() {
                   variant='standard'
                   value={candy1.name}
                   sx={{width: '62.5%', margin: '0px'}}
-                  onChange={e => setCandy1({...candy1, name: e.target.value})}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 15) {
+                      setCandy1({ ...candy1, name: e.target.value });
+                    }
+                  }}
                   disabled={!editingCandy1}
                 />
               </Stack>
@@ -246,7 +313,12 @@ function EditCandy() {
                   value={candy1.price}
                   type='number'
                   sx={{width: '55%', margin: '0px'}}
-                  onChange={e => setCandy1({...candy1, price: e.target.value})}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
+                      setCandy1({ ...candy1, price: inputValue });
+                    }
+                  }}
                   disabled={!editingCandy1}
                   InputProps={{
                     startAdornment: <InputAdornment position="start">R$</InputAdornment>
@@ -260,9 +332,8 @@ function EditCandy() {
                 position="relative"
               >
                 <Avatar
-                  src={candy1.photo ? URL.createObjectURL(candy1.photo) : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
+                  src={candy1.url ? candy1.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
                   alt={candy1.name}
-                  onClick={handleImageUpload1}
                 />
                 {editingImage1 && (
                   <IconButton
@@ -306,7 +377,11 @@ function EditCandy() {
                   variant='standard'
                   value={candy2.name}
                   sx={{width: '62.5%', margin: '0px'}}
-                  onChange={e => setCandy2({...candy2, name: e.target.value})}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 15) {
+                      setCandy2({ ...candy2, name: e.target.value });
+                    }
+                  }}
                   disabled={!editingCandy2}
                 />
               </Stack>
@@ -320,7 +395,12 @@ function EditCandy() {
                   value={candy2.price}
                   type='number'
                   sx={{width: '55%', margin: '0px'}}
-                  onChange={e => setCandy2({...candy2, price: e.target.value})}
+                  onChange={(e) => {
+                    const inputValue = e.target.value;
+                    if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
+                      setCandy1({ ...candy1, price: inputValue });
+                    }
+                  }}
                   disabled={!editingCandy2}
                   InputProps={{
                     startAdornment: <InputAdornment position="start">R$</InputAdornment>
@@ -334,9 +414,8 @@ function EditCandy() {
                 position="relative"
               >
                 <Avatar
-                  src={candy2.photo ? URL.createObjectURL(candy2.photo) : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
+                  src={candy2.url ? candy2.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
                   alt={candy2.name}
-                  onClick={handleImageUpload2}
                 />
                 {editingImage2 && (
                   <IconButton
@@ -376,7 +455,7 @@ function EditCandy() {
             {loginTimeout && <CircularProgress />}
         </Stack>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity={updateSuccessful ? 'success' : "error"} sx={{ width: '100%' }}>
+        <Alert onClose={handleClose} severity={alertSeverity} sx={{ width: '100%' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>
