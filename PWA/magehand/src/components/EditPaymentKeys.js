@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Box, Stack, Snackbar, Alert } from '@mui/material';
-import {app, authErrorCodes} from '../firebase/config'
+import { Container, Typography, TextField, Button, Stack, Snackbar, Alert, InputAdornment, IconButton, } from '@mui/material';
+import {app} from '../firebase/config'
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, onValue, get, child, update} from "firebase/database";
+import { getDatabase, ref, get, child, update} from "firebase/database";
 import CheckIcon from '@mui/icons-material/Check';
 import CircularProgress from '@mui/material/CircularProgress';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import VisibilityIcon from '@mui/icons-material/Visibility'; 
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'; 
+import Link from '@mui/material/Link';
+import axios from 'axios';
 import '../assets/CustomFonts.css'
 
 function EditPaymentKeys() {
@@ -15,8 +19,8 @@ function EditPaymentKeys() {
   const auth = getAuth(app);
   const dbRef = ref(getDatabase(app));
 
-  const [paymentKey, setPaymentKey] = useState('');
   const [paymentToken, setPaymentToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
 
   const [open, setOpen] = useState(false);
@@ -48,14 +52,17 @@ function EditPaymentKeys() {
     get(child(dbRef, uid + '/PaymentKeys')).then( (snapshot) => {
       if(snapshot.exists()){
         console.log(snapshot.val());
-        setPaymentKey(snapshot.val().publicKey);
         setPaymentToken(snapshot.val().accessToken);
       }
       else {
-        console.log("No data available");
+        setUpdateSuccessful(false);
+        setOpen(true);
+        setSnackbarMessage("No data available");
       }
     }).catch((error) => {
-      console.error(error);
+      setUpdateSuccessful(false);
+      setOpen(true);
+      setSnackbarMessage(error.code);
     })
   }, []);
 
@@ -74,33 +81,40 @@ function EditPaymentKeys() {
     }
     
     const uid = auth.currentUser.uid;
+
+    const instance = axios.create(
+      {baseURL: 'https://api.mercadopago.com', headers: {'Content-Type' : 'application/json', 'Authorization' : `Bearer ${paymentToken}`}}
+    )
     
-    const newKeys = {
-      accessToken: paymentToken,
-      publicKey: paymentKey,
-    };
-
-    const updates = {};
-    updates['/' + uid + '/PaymentKeys'] = newKeys;
-
-    update(dbRef, updates).then( (update) => {
-      console.log(update);
-      setUpdateSuccessful(true);
-      setOpen(true);
-      setSnackbarMessage('Update successful!');
+    instance.get('v1/payments/search?sort=date_created&criteria=desc&external_reference=ID_REF').then(response => {
+      const newKeys = {
+        accessToken: paymentToken,
+      };
+  
+      const updates = {};
+      updates['/' + uid + '/PaymentKeys'] = newKeys;
+  
+      update(dbRef, updates).then( (update) => {
+        setUpdateSuccessful(true);
+        setOpen(true);
+        setSnackbarMessage('Update successful!');
+      }).catch((error) => {
+        setUpdateSuccessful(false);
+        setOpen(true);
+        setSnackbarMessage(error.code);
+      })
     }).catch((error) => {
-      console.error(error);
       setUpdateSuccessful(false);
       setOpen(true);
-      setSnackbarMessage(error);
-    })
+      setSnackbarMessage('Error: invalid access token!');
+    });
+    
   };
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
       return;
     }
-
     setOpen(false);
   };
 
@@ -115,25 +129,29 @@ function EditPaymentKeys() {
             display="flex" 
             flexDirection="column" 
         >
-            <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Payment Keys 🗝️</Typography>
+            <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Payment Key 🗝️</Typography>
             <TextField
-                label="Payment Key"
-                variant="standard"
-                fullWidth
-                sx={{fontFamily: 'PlaypenSans'}} 
-                value={paymentKey}
-                onChange={e => setPaymentKey(e.target.value)}
-                margin="normal"
-            />
-            <TextField
-                label="Payment Token"
-                variant="standard"
-                fullWidth
-                sx={{ fontFamily: 'PlaypenSans'}} 
-                value={paymentToken}
-                onChange={e => setPaymentToken(e.target.value)}
-                margin="normal"
-            />
+            label="Access Token"
+            type={showToken ? 'text' : 'password'} 
+            variant="standard"
+            fullWidth
+            sx={{fontFamily: 'PlaypenSans'}} 
+            value={paymentToken}
+            onChange={e => setPaymentToken(e.target.value)}
+            margin="normal"
+            InputProps={{
+              endAdornment: ( 
+                <InputAdornment position="end">
+                  <IconButton
+                    edge="end"
+                    onClick={() => setShowToken(!showToken)} 
+                  >
+                    {showToken ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
             <Button 
               variant="contained"
               fullWidth 
@@ -158,12 +176,30 @@ function EditPaymentKeys() {
               sx={{fontFamily: 'PlaypenSans'}}  
               onClick={toggleInstructions}
             >
-                {showInstructions ? 'Hide' : 'How do I get these keys?'}
+                {showInstructions ? 'Hide' : 'How do I get this key?'}
             </Button>
             {showInstructions && (
-                <Box mt={2}>
-                Instruction text
-                </Box>
+                <Stack mt={2} spacing={1} >
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}>Don't have the Mercado Pago token yet? 👇</Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
+                    1: Enter the&nbsp;
+                    <Link href="https://mercadopago.com.br/developers/panel/app">
+                      Mercado Pago developers panel
+                    </Link>
+                  </Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
+                    2: Hit the blue button to create your application.
+                  </Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
+                    3: Select your newly created application.
+                  </Typography>
+                  <Typography variant="h9" sx={{fontFamily: 'PlaypenSans'}}>
+                    4: On the left side bar, click on <u>"Credenciais de Produção"</u>.
+                  </Typography>
+                  <Typography variant="h9" sx={{fontFamily: 'PlaypenSans'}}>
+                    5: Copy your access token and insert it above.
+                  </Typography>
+                </Stack>
             )}
             {loginTimeout && <CircularProgress />}
         </Stack>
