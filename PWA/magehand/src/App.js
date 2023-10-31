@@ -11,6 +11,7 @@ import SeePurchaseHistory from './components/SeePurchaseHistory';
 import ChangePassword from './components/ChangePassword'; 
 import EditCandy from './components/EditCandy';
 import ReplenishCandy from './components/ReplenishCandy';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export function ErrorMessage({message}){
   return (
@@ -23,12 +24,12 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Login/>} />
-        <Route path='/main' element={<Main/>}/>
-        <Route path="/editcandy" element={<EditCandy/>} />
-        <Route path="/editpaymentkeys" element={<EditPaymentKeys/>} />
-        <Route path="/purchasehistory" element={<SeePurchaseHistory/>} />
-        <Route path="/changepassword" element={<ChangePassword/>} />
-        <Route path="/replenishcandy" element={<ReplenishCandy/>} />
+        <Route path='/main' element={<ProtectedRoute><Main/></ProtectedRoute>}/>
+        <Route path="/editcandy" element={<ProtectedRoute><EditCandy/></ProtectedRoute>} />
+        <Route path="/editpaymentkeys" element={<ProtectedRoute><EditPaymentKeys/></ProtectedRoute>} />
+        <Route path="/purchasehistory" element={<ProtectedRoute><SeePurchaseHistory/></ProtectedRoute>} />
+        <Route path="/changepassword" element={<ProtectedRoute><ChangePassword/></ProtectedRoute>} />
+        <Route path="/replenishcandy" element={<ProtectedRoute><ReplenishCandy/></ProtectedRoute>} />
       </Routes>
     </Router>
   );
