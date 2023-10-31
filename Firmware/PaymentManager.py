@@ -33,42 +33,54 @@ class PaymentManager:
     def __init__(self):
         self.method = "pix"
         self.currentPayment = None
-        self.publicKey = None
         self.headers = None
-        self.payerData = None
 
 
     """
         Method to set the appropriate payment keys
     """
-    def setPaymentKeys(self, publicKey, accessToken, payerData):
-        self.publicKey = publicKey
+    def setPaymentKeys(self, accessToken):
         self.headers = {
         'Authorization': f'Bearer {accessToken}',
         'Content-Type': 'application/json',
         }
-        self.payerData = payerData
 
     def hasPaymentKeys(self):
-        return not (self.publicKey == None or self.headers == None or self.payerData == None)
+        return self.headers != None
 
     """
         Method to create a qrcode for payment of specific amounts. It returs
     True or False depending on success of the request
     """
     def createPayment(self, amount, description):
+        from datetime import datetime, timedelta
+        expiration = datetime.now() + timedelta(minutes=3)
+        date_of_expiration = expiration.astimezone().isoformat(timespec='milliseconds')
         data = {
                 "transaction_amount": amount,
                 "description": description,
                 "payment_method_id": self.method,
-                "payer": self.payerData,
+                "payer": {
+                    "email": "customer@magehand.com",
+                    "first_name": "MageHand",
+                    "last_name": "Customer",
+                    "identification": {
+                        "type": "CPF",
+                        "number": "01234567890",
+                    },
+                },
+                "date_of_expiration": date_of_expiration
         }
+        print(f'"date_of_expiration": {date_of_expiration}')
         response = requests.post(PaymentManager.api_url, data=json.dumps(data), headers=self.headers)
         if response.status_code in [201, 200]:
             json_resp = response.json()
             resp = DotMap(json_resp)
             self.currentPayment = resp.id
-            return True
+            return resp.point_of_interaction.transaction_data.qr_code_base64
+        else:
+            print(response.content)
+            print(response.text)
 
         return False
 
@@ -78,7 +90,7 @@ class PaymentManager:
     def checkPayment(self):
         if self.currentPayment == None:
             return None
-        response = requests.get(PaymentManager.api_url + '/' + self.currentPayment, headers=self.headers)
+        response = requests.get(PaymentManager.api_url + '/' + str(self.currentPayment), headers=self.headers)
         if response.status_code not in [201, 200]:
             return None
         json_resp = response.json()

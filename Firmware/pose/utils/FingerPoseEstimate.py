@@ -26,7 +26,7 @@ class FingerPoseEstimate:
 
     def calculate_slope_of_fingers(self):
         for finger in Finger:
-            print('Angle Finger is {}'.format(Finger.get_finger_name(finger)))
+            #print('Angle Finger is {}'.format(Finger.get_finger_name(finger)))
             points = Finger.get_array_of_points(finger)
             slope_at_xy, slope_at_yz = [], []
             for point in points:
@@ -75,7 +75,7 @@ class FingerPoseEstimate:
         angle_of_curve = math.acos(cos_in)
         angle_of_curve =  (57.2958 * angle_of_curve) % 180
         
-        print('Angle of curve = {}'.format(angle_of_curve))
+        #print('Angle of curve = {}'.format(angle_of_curve))
         HALF_CURL_START_LIMIT = 60.0
         NO_CURL_START_LIMIT = 130.0
         
@@ -137,8 +137,8 @@ class FingerPoseEstimate:
                                                                        start_mid_x_dist,
                                                                        mid_end_x_dist, max_dist_x)
         
-        print('Direction obtained v = {}, h = {}'.format(FingerPosition.get_finger_position_name(reqd_vertical_direction),
-                                                        FingerPosition.get_finger_position_name(reqd_horizontal_direction)))
+        #print('Direction obtained v = {}, h = {}'.format(FingerPosition.get_finger_position_name(reqd_vertical_direction),
+        #                                                FingerPosition.get_finger_position_name(reqd_horizontal_direction)))
         if reqd_vertical_direction == FingerPosition.VerticalUp:
             if reqd_horizontal_direction == FingerPosition.HorizontalLeft:
                 reqd_direction = FingerPosition.DiagonalUpLeft
@@ -175,8 +175,8 @@ class FingerPoseEstimate:
             vote_diagonal += DISTANCE_VOTE_POWER
         else:
             vote_horizontal += DISTANCE_VOTE_POWER
-        print('Iteration 1: Ratio = {:.2f}, ({}, {}, {})'.format(start_end_x_y_dist_ratio, vote_vertical, 
-                                                                vote_diagonal, vote_horizontal))
+        #print('Iteration 1: Ratio = {:.2f}, ({}, {}, {})'.format(start_end_x_y_dist_ratio, vote_vertical, 
+        #                                                        vote_diagonal, vote_horizontal))
         
         start_mid_dist = math.sqrt(start_mid_x_dist ** 2 + start_mid_y_dist ** 2)
         start_end_dist = math.sqrt(start_end_x_dist ** 2 + start_end_y_dist ** 2)
@@ -198,15 +198,15 @@ class FingerPoseEstimate:
         vote_vertical += vote1
         vote_diagonal += vote2
         vote_horizontal += vote3
-        print('Iteration 2: Total Angle = {:.3f}, ({}, {}, {})'.format(total_angle, vote1, vote2, vote3))
+        #print('Iteration 2: Total Angle = {:.3f}, ({}, {}, {})'.format(total_angle, vote1, vote2, vote3))
         
         for finger_slope in finger_slopes:
             vote1, vote2, vote3 = self.angle_orientation_at(finger_slope, weightage_at = SINGLE_ANGLE_VOTE_POWER)
             vote_vertical += vote1
             vote_diagonal += vote2
             vote_horizontal += vote3
-            print('Iteration 3: Total Angle = {:.3f}, ({}, {}, {})'.format(finger_slope, vote1, vote2, vote3))
-        print('Total weights: ({}, {}, {})'.format(vote_vertical, vote_diagonal, vote_horizontal))
+            #print('Iteration 3: Total Angle = {:.3f}, ({}, {}, {})'.format(finger_slope, vote1, vote2, vote3))
+        #print('Total weights: ({}, {}, {})'.format(vote_vertical, vote_diagonal, vote_horizontal))
         
         # Incase of tie, highest preference goes to Vertical, followed by horizontal and then diagonal
         reqd_direction = None
@@ -223,7 +223,7 @@ class FingerPoseEstimate:
                                                               mid_end_y_dist, max_dist_y,
                                                               start_end_x_dist, start_mid_x_dist,
                                                               mid_end_x_dist, max_dist_x)
-        print('Vote at {}, {}, {}'.format(vote_vertical, vote_diagonal, vote_horizontal))
+        #print('Vote at {}, {}, {}'.format(vote_vertical, vote_diagonal, vote_horizontal))
         return reqd_direction
     
     def calculate_orientation_of_fingers(self, print_finger_info):
@@ -239,20 +239,20 @@ class FingerPoseEstimate:
             end_point_at = self.coords_xyz[finger_points_at[3][1]]
             
             finger_curled = self.is_finger_curled(start_point_at, mid_point_at, end_point_at)
-            print('Finger: {} = {}'.format(Finger.get_finger_name(finger), FingerCurled.get_finger_curled_name(finger_curled)))
+            #print('Finger: {} = {}'.format(Finger.get_finger_name(finger), FingerCurled.get_finger_curled_name(finger_curled)))
             finger_position = self.calculate_direction_of_finger(start_point_at, mid_point_at, end_point_at,
                                                                  self.slopes_xy[finger][point_index_at:])
-            print('Finger: {} = {}'.format(Finger.get_finger_name(finger),
-                                          FingerPosition.get_finger_position_name(finger_position)))
+            #print('Finger: {} = {}'.format(Finger.get_finger_name(finger),
+            #                              FingerPosition.get_finger_position_name(finger_position)))
             
             self.finger_curled[finger] = finger_curled
             self.finger_position[finger] = finger_position
 
-        if print_finger_info:
-            for finger_index, curl, pos in zip(Finger, self.finger_curled, self.finger_position):
-                print('Finger: {}, Curl: {}, Orientation: {}'.format(
-                        Finger.get_finger_name(finger_index), FingerCurled.get_finger_curled_name(curl), 
-                        FingerPosition.get_finger_position_name(pos)))
+        #if print_finger_info:
+        #    for finger_index, curl, pos in zip(Finger, self.finger_curled, self.finger_position):
+        #        #print('Finger: {}, Curl: {}, Orientation: {}'.format(
+        #                Finger.get_finger_name(finger_index), FingerCurled.get_finger_curled_name(curl), 
+        #                FingerPosition.get_finger_position_name(pos)))
 
 
     def calculate_positions_of_fingers(self, print_finger_info):

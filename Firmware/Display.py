@@ -77,6 +77,7 @@ class Display:
         #Load images and scale them to fit the specified size
         self.images = {}
         for image in images:
+            #print(images[image]['path'])
             originalImage = pygame.image.load(images[image]['path'])
             originalWidth, originalHeight = originalImage.get_size()
             widthScale = imageSize / originalWidth
@@ -118,7 +119,7 @@ class Display:
         new_width = int(originalWidth * scale_factor)
         new_height = int(originalHeight * scale_factor)
         scaledImage = pygame.transform.scale(originalImage, (new_width, new_height))
-        imageInfo.update('figure', scaledImage)
+        imageInfo['figure'] = scaledImage
         self.images.update({image : imageInfo})
 
     """
@@ -237,8 +238,13 @@ class Display:
         pygame.display.flip()
 
         
-    def showImage(self, image):
-        background_color = self.colors['Background']
-        self.screen.fill(background_color)
-        self.screen.blit(pygame.surfarray.make_surface(image), (0,0))
+    def showImage(self, image, make_surface=True, pos=(0, 0), clear=True):
+        if clear:
+            background_color = self.colors['Background']
+            self.screen.fill(background_color)
+        
+        if make_surface:
+            self.screen.blit(pygame.surfarray.make_surface(image), pos)
+        else:
+            self.screen.blit(image, pos)
         pygame.display.flip()

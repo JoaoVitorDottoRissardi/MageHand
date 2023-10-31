@@ -80,11 +80,11 @@
          },
          "Candy1":{
             "type":"Candy",
-            "path":"./images/mms.jpg"
+            "path":"./images/candy1.png"
          },
          "Candy2":{
             "type":"Candy",
-            "path":"./images/jelly_beans.jpg"
+            "path":"./images/candy2.png"
          }
       }
    },
@@ -104,12 +104,12 @@
       "1":{
          "forward":23,
          "backward":16,
-         "speed":0.5
+         "speed":0.2
       },
       "2":{
          "forward":24,
          "backward":20,
-         "speed":0.5
+         "speed":0.2
       }
    }
 }

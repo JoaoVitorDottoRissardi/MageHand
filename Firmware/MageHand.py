@@ -12,6 +12,7 @@ import threading
 import datetime
 import sseclient # sseclient-py
 from dataclasses import dataclass # needs python 3.7
+from time import sleep
 
 """
 Struct to represent the candies in the machine compatible with firebase updates
@@ -68,9 +69,11 @@ phases: dict
 
 class MageHand:
     firebase_url = "https://mage-hand-demo-default-rtdb.firebaseio.com/"
+    candy_1_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy1.jpg?alt=media&token=360bde5e-8e45-4183-9bfd-0b5cbd087b29"
+    candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media&token=2915185d-1743-4c70-96ef-33248851865f"
     minVolume = 10
     maxCupVolume = 100
-    volumePerTurn = 10
+    volumePerTurn = 2
     def __init__(self):
         self.user = "kJyBx6wkKxblBQZn1Xc1BDLikH93"
         config = (Path.home() / ".config/MageHand/MageHandParameters.json").read_text()
@@ -90,10 +93,13 @@ class MageHand:
             candyData = json.loads(candyFile)
             c1 = candyData["Candy1"]
             c2 = candyData["Candy2"]
-            self.candy1 = Candy(c1["Name"], c1["Price"], c1["Volume"], c1["Image"])
-            self.candy2 = Candy(c2["Name"], c2["Price"], c2["Volume"], c2["Image"])
+            self.candy1 = Candy(c1["Name"], float(c1["Price"]), float(c1["Volume"]), c1["Image"])
+            self.candy2 = Candy(c2["Name"], float(c2["Price"]), float(c2["Volume"]), c2["Image"])
         else:
             self.getFirebaseCandyInformation()
+
+        self.machine.updateCandyImage('Candy1')
+        self.machine.updateCandyImage('Candy2')
 
         self.selectedCandy = None
         self.stateFile = self.dataDir / "current_state.txt"
@@ -178,13 +184,33 @@ class MageHand:
             self.getFirebasePaymentKeys()
 
         self.machine.showGestureMessage('Make a Stop sign to proceed', 'Info', ['Stop'])
+        sleep(4)
 
         def none_callback(frame, **kargs):
             self.machine.showImage(frame)
             return 'introduction'
+            
+        def undefined_callback(**kargs):
+            self.machine.showGestureMessage('Hand detected \n Do a Stop sign to proceed', 'Info', ['Stop'])
+            return 'introduction'
         
-        return self.gestureRecognizer.runState("introduction", ["Stop", "None"], {"None": none_callback}
-                                        , ["Stop"],{"Stop": lambda **kargs: "confirmation"})
+        def stop_callback(**kargs):
+            self.machine.showGestureMessage('Confirm the Stop sign for 4 seconds to proceed', 'Info', ['Stop'])
+            return 'introduction'
+        
+        return self.gestureRecognizer.runState(
+            "introduction",
+            ["Stop", "None", "Undefined"],
+            {
+                "Stop": stop_callback,
+                "None": none_callback,
+                "Undefined": undefined_callback
+            },
+            ["Stop"],
+            {
+                "Stop": lambda **kargs: "confirmation"
+            }
+        )
 
 
     """
@@ -205,8 +231,9 @@ class MageHand:
 
         def undefined_callback(Xpositions, **kargs):
             mean = sum(Xpositions) / len(Xpositions)
+            print(f"Posicao detectada = {mean}")
 
-            self.selectedCandy = 1 if mean < 320 else 2
+            self.selectedCandy = 1 if mean < 0.5 else 2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
 
             if c.volume > MageHand.minVolume:
@@ -242,6 +269,9 @@ class MageHand:
                     "Peace": peace_confirmationCallback,
                     "ThumbsDown": thumbsDown_None_confirmationCallback,
                     "None": thumbsDown_None_confirmationCallback
+                },
+                {
+                    "None": 30
                 })
 
     """
@@ -255,7 +285,7 @@ class MageHand:
             self.machine.stopPouringCandy(self.selectedCandy)
             self.machine.showGestureMessage("Thumbs Down detected \n hold it for 4 seconds", "Confirm", ["ThumbsDown"])
             return "pouring"
-        def fist_callback(**kargs):
+        def fist_callback(delta_ms, **kargs):
 
             cup = self.cupVolume1 if self.selectedCandy == 1 else self.cupVolume2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
@@ -272,8 +302,8 @@ class MageHand:
 
             self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]} of {self.maxCupVolume} \n Available: {c.volume}\n Total price: {cup[0]*c.price}", ["Candy" + str(self.selectedCandy)])
             self.machine.pourCandy(self.selectedCandy)
-            cup[0] += MageHand.volumePerTurn
-            c.volume -= MageHand.volumePerTurn
+            cup[0] += MageHand.volumePerTurn * delta_ms / 1000
+            c.volume -= MageHand.volumePerTurn * delta_ms / 1000
             return "pouring"
 
 
@@ -310,6 +340,9 @@ class MageHand:
                 { "ThumbsDown": thumbsDown_confirmationCallback,
                   "Stop": stop_confirmationCallback,
                   "None": none_confirmationCallback
+                },
+                {
+                    "None": 30
                 })
 
 
@@ -351,7 +384,10 @@ class MageHand:
                                                 "ThumbsUp":thumbsUp_confirmationCallback,
                                                 "Peace": peace_confirmationCallback,
                                                 "None": none_confirmationCallback
-                                               }
+                                               },
+                                                {
+                                                    "None": 30
+                                                }
                                                )
     """
         Function to initiate the payment phase
@@ -359,34 +395,57 @@ class MageHand:
     def paymentPhaseFunction(self):
         self.stateFile.write_text("payment")
 
+        self.machine.showGestureMessage("Generating payment, please wait", "Confirm", ["Peace"])
         successEvent = threading.Event()
         failureEvent = threading.Event()
         gestureEvent = threading.Event()
         amount = (self.candy1.price * self.cupVolume1[0]) + (self.candy2.price * self.cupVolume2[0])
         if "--test" not in sys.argv:
-            self.paymentManager.createPayment(amount=amount, description="candy bought with mage hand")
+            import pygame
+            import base64
+            import io
+            qrcode_b64 = self.paymentManager.createPayment(amount=round(amount, 2), description="candy bought with mage hand")
+            if not qrcode_b64:
+                self.machine.showGestureMessage("Error creating payment - order cancelled", "Alert", ["ThumbsDown"])
+                self.rejectCandies("Order was cancelled")
+                sleep(5)
+                return "introduction"
+            qrcode = base64.b64decode(qrcode_b64)
+            mem_file = io.BytesIO(qrcode)
+            qrcode_img = pygame.image.load(mem_file)
+            qrcode_img = pygame.transform.scale(qrcode_img, (200, 200))
+
 
         def thread1():
             while True:
                 if gestureEvent.is_set():
                     break
                 status = self.paymentManager.checkPayment()
-                if status == "cancelled":
+                print(f"status checked: {status}")
+                if status == "cancelled" or status == "expired":
                     failureEvent.set()
                     break
                 elif status == "approved":
                     successEvent.set()
                     break
+                sleep(10)
 
         def thread2():
             def thumbsDown_callback(**kargs):
                 self.machine.showGestureMessage("Hold Thumbs Down for 4 seconds to cancel", "Confirm", ["ThumbsDown"])
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
+
             def thumbsDown_confirmationCallback(**kargs):
                 gestureEvent.set()
                 return "introduction"
 
-            self.gestureRecognizer.runState("payment",["ThumbsDown"], { "ThumbsDown": thumbsDown_callback }, ["ThumbsDown"], {"ThumbsDown": thumbsDown_confirmationCallback})
+            def normal_callback(**kargs):
+                self.machine.showGestureMessage("Here is your qrcode", "Confirm", ["ThumbsUp"])
+                self.machine.showImage(qrcode_img, make_surface=False, clear=False, pos=(200, 200))
+                return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
+                
+
+            self.gestureRecognizer.runState("payment",["ThumbsDown", "Undefined", "None"], { "ThumbsDown": thumbsDown_callback, "None": normal_callback, "Undefined": normal_callback}, ["ThumbsDown"], {"ThumbsDown": thumbsDown_confirmationCallback})
 
         paymentThread = threading.Thread(target=thread1)
         gestureThread = threading.Thread(target=thread2)
@@ -415,6 +474,8 @@ class MageHand:
         client = sseclient.SSEClient(response)
         print("Firebase notifications are now enabled")
         for event in client.events():
+            print(f"Received event {event}")
+            print(event.event)
             data = json.loads(event.data)
             if event.event == 'put':
                 print("put: " + data)
@@ -424,21 +485,32 @@ class MageHand:
 
 
     def getFirebasePaymentKeys(self):
-        response = requests.get(MageHand.firebase_url + "/PaymentKeys.json")
+        response = requests.get(MageHand.firebase_url + self.user + "/PaymentKeys.json")
         if response.status_code in [200, 201]:
             json_resp = response.json()
-            self.paymentManager.setPaymentKeys(json_resp["publicKey"], json_resp["accessToken"], json_resp["payerData"])
+            self.paymentManager.setPaymentKeys(json_resp["accessToken"])
 
     def getFirebaseCandyInformation(self):
-        response = requests.get(MageHand.firebase_url + "/candyInformation.json")
+        #response = requests.get(MageHand.candy_1_storage_url)
+        #if response.status_code in [200, 201]:
+        #    with open('images/candy1.png', 'wb') as candy1:
+        #        candy1.write(response.content)
+        #response = requests.get(MageHand.candy_2_storage_url)
+        #if response.status_code in [200, 201]:
+        #    with open('images/candy2.png', 'wb') as candy2:
+        #        candy2.write(response.content)
+        
+        response = requests.get(MageHand.firebase_url + self.user + "/candyInformation.json")
         if response.status_code in [200, 201]:
             json_resp = response.json()
             print(json_resp)
             c1 = json_resp["Candy1"]
             c2 = json_resp["Candy2"]
-            self.candy1 = Candy(c1["Name"], c1["Price"], c1["Volume"], c1["Image"])
-            self.candy2 = Candy(c2["Name"], c2["Price"], c2["Volume"], c2["Image"])
-            (self.dataDir / "candyInformation.json").write_text(response.text)
+            c1["Image"] = 'images/candy1.png'
+            c2["Image"] = 'images/candy2.png'
+            self.candy1 = Candy(c1["Name"], float(c1["Price"]), float(c1["Volume"]), c1["Image"])
+            self.candy2 = Candy(c2["Name"], float(c2["Price"]), float(c2["Volume"]), c2["Image"])
+            (self.dataDir / "candyInformation.json").write_text(json.dumps({"Candy1": c1, "Candy2": c2}))
 
 if __name__ == '__main__':
     mage = MageHand()
