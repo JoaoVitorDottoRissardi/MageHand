@@ -96,3 +96,6 @@ class PaymentManager:
         json_resp = response.json()
         resp = DotMap(json_resp)
         return resp["status"]
+
+    def cancelPayment(self):
+        response = requests.get(PaymentManager.api_url + '/' + str(self.currentPayment), headers=self.headers, data=json.dumps({"status":"cancelled"}))

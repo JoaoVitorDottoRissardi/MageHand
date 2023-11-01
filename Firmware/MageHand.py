@@ -398,7 +398,6 @@ class MageHand:
         self.machine.showGestureMessage("Generating payment, please wait", "Confirm", ["Peace"])
         successEvent = threading.Event()
         failureEvent = threading.Event()
-        gestureEvent = threading.Event()
         amount = (self.candy1.price * self.cupVolume1[0]) + (self.candy2.price * self.cupVolume2[0])
         if "--test" not in sys.argv:
             import pygame
@@ -418,11 +417,9 @@ class MageHand:
 
         def thread1():
             while True:
-                if gestureEvent.is_set():
-                    break
                 status = self.paymentManager.checkPayment()
                 print(f"status checked: {status}")
-                if status == "cancelled" or status == "expired":
+                if status == "cancelled":
                     failureEvent.set()
                     break
                 elif status == "approved":
@@ -436,7 +433,7 @@ class MageHand:
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
 
             def thumbsDown_confirmationCallback(**kargs):
-                gestureEvent.set()
+                self.paymentManager.cancelPayment()
                 return "introduction"
 
             def normal_callback(**kargs):
@@ -448,10 +445,12 @@ class MageHand:
             self.gestureRecognizer.runState("payment",["ThumbsDown", "Undefined", "None"], { "ThumbsDown": thumbsDown_callback, "None": normal_callback, "Undefined": normal_callback}, ["ThumbsDown"], {"ThumbsDown": thumbsDown_confirmationCallback})
 
         paymentThread = threading.Thread(target=thread1)
+        expirationTimer = threading.Timer(300, self.paymentManager.cancelPayment)
         gestureThread = threading.Thread(target=thread2)
 
         paymentThread.start()
         gestureThread.start()
+        expirationTimer.start()
 
         paymentThread.join()
         gestureThread.join()
