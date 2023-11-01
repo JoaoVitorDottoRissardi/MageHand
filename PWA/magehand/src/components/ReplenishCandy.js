@@ -17,7 +17,7 @@ function ReplenishCandy() {
   const auth = getAuth(app);
   const dbRef = ref(getDatabase(app));
 
-  const maxVolume = 100;
+  const maxVolume = 3000.0;
 
   const [addCandy1Volume, setaddCandy1Volume] = useState(null);
   const [addCandy2Volume, setaddCandy2Volume] = useState(null);
@@ -88,6 +88,8 @@ function ReplenishCandy() {
 
     setCandy1Volume(candy1Volume + addCandy1Volume);
     setCandy2Volume(candy2Volume + addCandy2Volume);
+    setaddCandy1Volume(0);
+    setaddCandy2Volume(0);
 
     update(dbRef, updates).then( (update) => {
       setUpdateSuccessful(true);
@@ -136,7 +138,7 @@ function ReplenishCandy() {
               Current volume: {candy1Volume ? candy1Volume : 0} ml
             </Typography>
             <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>➕</Typography>
-            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL)</Typography>
+            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy1Volume} ml</Typography>
             <Slider 
               defaultValue={0} 
               aria-label="Default" 
@@ -147,9 +149,18 @@ function ReplenishCandy() {
               max={maxVolume - candy1Volume}
             />
             <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>🟰</Typography>
-            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-              New Volume: {addCandy1Volume ? parseFloat(candy1Volume) + parseFloat(addCandy1Volume) : parseFloat(candy1Volume)} ml
-            </Typography>
+            <Stack
+              spacing={2}
+              direction="row"
+            >
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                New Volume: {addCandy1Volume ? parseFloat(candy1Volume) + parseFloat(addCandy1Volume) : parseFloat(candy1Volume)} ml       
+              </Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
+                {parseFloat(candy1Volume) + parseFloat(addCandy1Volume) === maxVolume ? ' ⚠️Full!' : ''}
+              </Typography>
+            </Stack>
+
           </Paper>
           <Paper
             elevation={3} 
@@ -167,7 +178,7 @@ function ReplenishCandy() {
               Current volume: {candy2Volume ? candy2Volume : 0} ml
             </Typography>
             <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>➕</Typography>
-            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL)</Typography>
+            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy2Volume} ml</Typography>
             <Slider 
               defaultValue={0} 
               aria-label="Default" 
@@ -178,9 +189,17 @@ function ReplenishCandy() {
               max={maxVolume - candy2Volume}
             />
             <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>🟰</Typography>
-            <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-              New Volume: {addCandy2Volume ? parseFloat(candy2Volume) + parseFloat(addCandy2Volume) : parseFloat(candy2Volume)} ml
-            </Typography>
+            <Stack
+              spacing={2}
+              direction="row"
+            >
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                New Volume: {addCandy2Volume ? parseFloat(candy2Volume) + parseFloat(addCandy2Volume) : parseFloat(candy2Volume)} ml       
+              </Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
+                {parseFloat(candy2Volume) + parseFloat(addCandy2Volume) === maxVolume ? ' ⚠️Full!' : ''}
+              </Typography>
+            </Stack>
           </Paper>
             <Button 
               variant="contained" 
