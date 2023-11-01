@@ -93,17 +93,17 @@ function EditCandy() {
     get(child(dbRef, uid + '/candyInformation')).then( (snapshot) => {
       if(snapshot.exists()){
         getDownloadURL(stRef1).then((url) => {
-          setCandy1({...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, url : url});
+          setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, url : url});
         }).catch((error) => {
           setSnackbarMessage(storageErrorCodes[error.code]);
-          setCandy1({...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
+          setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
           setalertSeverity('warning');
           setOpen(true);
         })
         getDownloadURL(stRef2).then((url2) => {
-          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, url : url2});
+          setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, url : url2});
         }).catch((error) => {
-          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
+          setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
           setSnackbarMessage(storageErrorCodes[error.code]);
           setalertSeverity('warning');
           setOpen(true);
@@ -137,11 +137,11 @@ function EditCandy() {
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
       console.log(file)
-      if(file && file.type.startsWith('image/')){
+      if(file && (file.type.startsWith('image/png') || file.type.startsWith('image/jpg') || file.type.startsWith('image/jpeg'))){
         setCandy1({...candy1, file: file, url : URL.createObjectURL(file)});
       }
       else{
-        setSnackbarMessage('Error: you can only select image files!');
+        setSnackbarMessage('Error: you can only select png, jpg or jpeg files!');
         setalertSeverity('error');
         setOpen(true);
       }
@@ -155,7 +155,7 @@ function EditCandy() {
     fileInput.accept = 'image/*';
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
-      if(file && file.type.startsWith('image/')){
+      if(file && (file.type.startsWith('image/png') || file.type.startsWith('image/jpg') || file.type.startsWith('image/jpeg'))){
         setCandy2({...candy2, file: file, url : URL.createObjectURL(file)});
       }
       else{
