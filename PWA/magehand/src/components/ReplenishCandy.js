@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Container, Typography, TextField, Button, Stack, Alert, Snackbar, InputAdornment, IconButton, Paper, Divider } from '@mui/material';
+import { Container, Typography, Button, Stack, Alert, Snackbar, Paper, Divider } from '@mui/material';
 import Slider from '@mui/material/Slider';
-import {app, authErrorCodes} from '../firebase/config'
+import {app} from '../firebase/config'
 import { getAuth } from "firebase/auth";
-import { getDatabase, ref, onValue, get, child, update} from "firebase/database";
+import { getDatabase, ref, get, child, update} from "firebase/database";
 import CheckIcon from '@mui/icons-material/Check';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import VisibilityIcon from '@mui/icons-material/Visibility'; 
 import CircularProgress from '@mui/material/CircularProgress';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'; 
 import '../assets/CustomFonts.css'
 
 function ReplenishCandy() {
@@ -69,7 +67,7 @@ function ReplenishCandy() {
       setOpen(true);
       setSnackbarMessage(error.code);
     })
-  }, []);
+  }, [auth.currentUser, dbRef]);
 
   const saveReplenishCandy = () => {
     if(auth.currentUser === null){
