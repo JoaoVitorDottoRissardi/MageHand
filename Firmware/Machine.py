@@ -235,8 +235,8 @@ class Machine:
     def updateCandyImage(self, candy):
         self.display.updateImage(candy)
 
-    def showImage(self, image):
-        self.display.showImage(image)
+    def showImage(self, image, make_surface=True, pos=(0, 0), clear=True):
+        self.display.showImage(image, make_surface=make_surface, pos=pos, clear=clear)
 
 # print("Oi")
 

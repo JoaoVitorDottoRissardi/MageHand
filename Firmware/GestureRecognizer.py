@@ -126,7 +126,8 @@ class GestureRecognizer:
         gestures_of_interest,
         gesture_started_callbacks,
         gestures_to_be_confirmed,
-        gesture_confirmed_callbacks
+        gesture_confirmed_callbacks,
+        confirmation_time_delta = 4
     ):
         def nop(**kargs):
             return state
@@ -143,20 +144,38 @@ class GestureRecognizer:
         in_confirmation = 'No'
         times_to_really_detect = 3
         last_gesture = 'Undefined'
+        timestamp_ns = 0
+        last_timestamp_ns = 0
         current_gesture_count = 0
         # detected_gestures = ['Undefined'] * times_to_really_detect
         # curr_idx = 0
         detected_gestures = []
-        confirmation_time_delta = 4 # in seconds
+        # confirmation_time_delta = 4 # in seconds
+        default_wanted_time = 4
+        if not isinstance(confirmation_time_delta, dict):
+            default_wanted_time = confirmation_time_delta
+            confirmation_time_delta = dict()
+
+        for g in gestures_to_be_confirmed:
+            if g not in confirmation_time_delta.keys():
+                confirmation_time_delta[g] = default_wanted_time
 
         while True:
             ret, frame = self.cap.read()
             timestamp = self.cap.get(cv2.CAP_PROP_POS_MSEC)
-            timestamp = time.monotonic_ns()
+            last_timestamp_ns = timestamp_ns
+            last_timestamp = timestamp
+            timestamp_ns = time.monotonic_ns()
+            timestamp = timestamp_ns // 1000000
             frame1 = cv2.resize(frame, (640, 480)) 
+
+            frame1 = cv2.cvtColor(frame1,cv2.COLOR_BGR2RGB)
+            #frame1 = np.rot90(frame1)
+
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=frame1)
             hand_landmarker_result = self.landmarker.detect_for_video(mp_image, int(timestamp))
             
+
             # magic conversion to expected landmarks format
             landmarks = []
             Xpositions = []
@@ -176,7 +195,10 @@ class GestureRecognizer:
             else:
                 score_label = "None"
 
+            if score_label not in gestures_of_interest:
+                score_label = 'Undefined'
 
+            print(f"frame (t={timestamp}) -> gesture {score_label} (fps={1000000000 / (timestamp_ns - last_timestamp_ns)})")
 
             if in_confirmation == 'No':
                 if score_label != last_gesture:
@@ -188,14 +210,14 @@ class GestureRecognizer:
 
                 if current_gesture_count >= times_to_really_detect:
                     # print(f"starting detection of '{score_label}'")
-                    new_state = gesture_started_callbacks[score_label](Xpositions=Xpositions, frame=frame1)
+                    new_state = gesture_started_callbacks[score_label](Xpositions=Xpositions, frame=frame1, delta_ms=timestamp-last_timestamp)
                     if new_state != state:
                         return new_state
 
                     if score_label in gestures_to_be_confirmed:
                         in_confirmation = score_label
                         detected_gestures = []
-                        confirmation_end = time.monotonic() + confirmation_time_delta
+                        confirmation_end = time.monotonic() + confirmation_time_delta[score_label]
             else:
                 detected_gestures.append(score_label)
                 should_give_up = self.detect_abandoned_gesture(in_confirmation, detected_gestures)
@@ -207,7 +229,7 @@ class GestureRecognizer:
                     curr_time = time.monotonic()
                     if curr_time >= confirmation_end:
                         # print(f"confirmed gesture '{in_confirmation}'")
-                        new_state = gesture_confirmed_callbacks[in_confirmation]()
+                        new_state = gesture_confirmed_callbacks[in_confirmation](delta_ms=timestamp-last_timestamp)
                         if new_state != state:
                             return new_state
                         in_confirmation = 'No'

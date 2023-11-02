@@ -1,7 +1,7 @@
 install: install-service install-python
 
 install-service:
-	install -v magehand.service $(XDG_CONFIG_HOME)/systemd/user/
+	install -v magehand.service /home/magehand/.config/systemd/user/
 
 install-python:
 	install -v -d -m 0755 -o magehand -g users /usr/local/bin/Magehand
@@ -10,9 +10,9 @@ install-python:
 	cp -r images /usr/local/bin/MageHand/
 
 config:
-	install -v -d $(XDG_CONFIG_HOME)/MageHand
-	install -v -D -t $(XDG_CONFIG_HOME)/MageHand MageHandParameters.json
-	touch $(XDG_CONFIG_HOME)/MageHand/current_state.txt
+	install -v -d /home/magehand/.config/MageHand
+	install -v -D -t /home/magehand/.config/MageHand MageHandParameters.json
+	touch /home/magehand/.config/MageHand/current_state.txt
 
 set-var:
 	install -v -d -m 0755 -o magehand -g users /var/lib/MageHand
