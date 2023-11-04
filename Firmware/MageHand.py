@@ -160,7 +160,7 @@ class MageHand:
     def bootPhaseFunction(self):
         lastPhase = self.stateFile.read_text() if self.stateFile.exists() else ""
 
-        self.getFirebaseCandyInformation()
+        self.syncFirebase()
         self.firebaseThread.start()
 
         if lastPhase == "payment":
@@ -465,11 +465,23 @@ class MageHand:
 
         return "introduction"
 
+    def syncFirebase(self):
+        self.machine.showGestureMessage("Syncing with remote database \n Please wait", "Info", [])
+        sleep(1)
+        response = requests.get(MageHand.firebase_url + self.user + "/synced.json")
+        if response.status_code in [200, 201]:
+            synced = response.json()
+            if not synced:
+                self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information from database", "Alert", [])
+                sleep(2)
+                self.getFirebaseCandyInformation()
+                self.getFirebasePaymentKeys()
+                response = requests.put(MageHand.firebase_url + self.user + "/SyncStatus.json", data=json.dumps(True))
     """
         Function to set up firebase listener
     """
     def firebaseCallbackFunction(self):
-        response = requests.get(MageHand.firebase_url, stream=True, headers={"Accept": "text/event-stream"})
+        response = requests.get(MageHand.firebase_url + self.user + "/.json", stream=True, headers={"Accept": "text/event-stream"})
         client = sseclient.SSEClient(response)
         print("Firebase notifications are now enabled")
         for event in client.events():
