@@ -138,21 +138,27 @@ function SeePurchaseHistory() {
                 <TableBody>
                   <TableRow>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy1Name}: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity1} ml</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity1.toFixed(2)} ml</Typography></TableCell>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>R$ {purchaseHistory[key].Price1.toFixed(2)}</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                      R$ {(purchaseHistory[key].Price1).toFixed(2)}
+                    </Typography></TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy2Name}: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2} ml</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2.toFixed(2)} ml</Typography></TableCell>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>R$ {purchaseHistory[key].Price2.toFixed(2)}</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                      R$ {(purchaseHistory[key].Price2 ).toFixed(2)}
+                    </Typography></TableCell>
                   </TableRow>
                   <TableRow>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>Total: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2 + purchaseHistory[key].Quantity1} ml</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{(purchaseHistory[key].Quantity2 + purchaseHistory[key].Quantity1).toFixed(2)} ml</Typography></TableCell>
                     <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>R$ {(purchaseHistory[key].Price2 + purchaseHistory[key].Price1).toFixed(2)}</Typography></TableCell>
+                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                      R$ {(purchaseHistory[key].Price2 + purchaseHistory[key].Price1 ).toFixed(2)}
+                    </Typography></TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
