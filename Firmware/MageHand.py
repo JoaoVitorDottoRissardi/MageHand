@@ -108,6 +108,8 @@ class MageHand:
         self.stateFile = self.dataDir / "current_state.txt"
         self.cupVolume1 = [0]
         self.cupVolume2 = [0]
+        self.cupPrice1 = [0]
+        self.cupPrice2 = [0]
 
         self.phases = {
             "boot": self.bootPhaseFunction,
@@ -123,18 +125,18 @@ class MageHand:
         self.machine.rejectCandies()
         date = datetime.datetime.now()
         index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
-        histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
+        histDict = { f"{date.date().isoformat()}/{date.time().isoformat("seconds")}": {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
-            "Price1": self.candy1.price*self.cupVolume1[0],
-            "Price2": self.candy2.price*self.cupVolume2[0],
+            "Price1": self.cupPrice1[0],
+            "Price2": self.cupPrice2[0],
             "Quantity1": self.cupVolume1[0],
             "Quantity2": self.cupVolume2[0],
-            "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
+            "Total": (self.cupPrice1[0] + self.cupPrice2[0]),
             "AdditionalInfo": reason,
             "Status": "Rejected",
             "Index": index+1
-        }},
+        },
          "OrderCount": index+1           }
         response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
         response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
@@ -144,20 +146,21 @@ class MageHand:
         self.machine.acceptCandies()
         date = datetime.datetime.now()
         index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
-        histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
+        histDict = { f"{date.date().isoformat()}/{date.time().isoformat("seconds")}": {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
-            "Price1": self.candy1.price*self.cupVolume1[0],
-            "Price2": self.candy2.price*self.cupVolume2[0],
+            "Price1": self.cupPrice1[0],
+            "Price2": self.cupPrice2[0],
             "Quantity1": self.cupVolume1[0],
             "Quantity2": self.cupVolume2[0],
-            "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
+            "Total": (self.cupPrice1[0] + self.cupPrice2[0]),
             "AdditionalInfo": reason,
             "Status": "Successful",
             "Index": index+1
-        }},
+        },
          "OrderCount": index+1           }
         response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
+        response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
 
     """
         Function to initiate the boot phase
@@ -183,6 +186,8 @@ class MageHand:
         self.stateFile.write_text("introduction")
         self.cupVolume1 = [0]
         self.cupVolume2 = [0]
+        self.cupPrice1 = [0]
+        self.cupPrice2 = [0]
 
         if not self.paymentManager.hasPaymentKeys():
             self.machine.showGestureMessage('There are no payment keys configured \n Cannot proceed', 'Alert', [])
@@ -293,6 +298,7 @@ class MageHand:
         def fist_callback(delta_ms, **kargs):
 
             cup = self.cupVolume1 if self.selectedCandy == 1 else self.cupVolume2
+            cupPrice = self.cupPrice1 if self.selectedCandy == 1 else self.cupPrice2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
 
             if cup[0] > self.maxCupVolume:
@@ -305,10 +311,11 @@ class MageHand:
                 self.machine.stopPouringCandy(self.selectedCandy)
                 return "pouring"
 
-            self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]} of {self.maxCupVolume} \n Available: {c.volume}\n Total price: {cup[0]*c.price}", ["Candy" + str(self.selectedCandy)])
+            self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]:.2} of {self.maxCupVolume:.2} \n Available: {c.volume:.2}\n Total price: {cupPrice[0]:.2}", ["Candy" + str(self.selectedCandy)])
             self.machine.pourCandy(self.selectedCandy)
-            cup[0] += MageHand.volumePerTurn * delta_ms / 1000
-            c.volume -= MageHand.volumePerTurn * delta_ms / 1000
+            cup[0] += round(MageHand.volumePerTurn * delta_ms / 1000, 2)
+            c.volume -= round(MageHand.volumePerTurn * delta_ms / 1000, 2)
+            cupPrice[0] = round(c.price * cup[0], 2)
             return "pouring"
 
 
@@ -405,7 +412,7 @@ class MageHand:
         self.machine.showGestureMessage("Generating payment, please wait", "Confirm", ["Peace"])
         successEvent = threading.Event()
         failureEvent = threading.Event()
-        amount = (self.candy1.price * self.cupVolume1[0]) + (self.candy2.price * self.cupVolume2[0])
+        amount = (self.cupPrice1[0]) + (self.cupPrice2[0])
         if "--test" not in sys.argv:
             import pygame
             import base64
