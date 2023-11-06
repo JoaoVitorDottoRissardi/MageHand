@@ -179,9 +179,9 @@ class Machine:
 
     """
 
-    def showGestureMessage(self, message, type, gestures):
+    def showGestureMessage(self, message, type, gestures, pos=False):
         gestures.append(type)
-        self.display.displayContent(type, message, gestures)
+        self.display.displayContent(type, message, gestures, pos=pos)
 
 
     """

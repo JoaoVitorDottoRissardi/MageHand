@@ -54,7 +54,7 @@ class PaymentManager:
     """
     def createPayment(self, amount, description):
         from datetime import datetime, timedelta
-        expiration = datetime.now() + timedelta(minutes=3)
+        expiration = datetime.now() + timedelta(minutes=7)
         date_of_expiration = expiration.astimezone().isoformat(timespec='milliseconds')
         data = {
                 "transaction_amount": amount,
@@ -98,4 +98,6 @@ class PaymentManager:
         return resp["status"]
 
     def cancelPayment(self):
-        response = requests.get(PaymentManager.api_url + '/' + str(self.currentPayment), headers=self.headers, data=json.dumps({"status":"cancelled"}))
+        if self.currentPayment == None:
+            return None
+        response = requests.put(PaymentManager.api_url + '/' + str(self.currentPayment), headers=self.headers, data=json.dumps({"status":"cancelled"}))

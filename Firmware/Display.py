@@ -70,9 +70,12 @@ class Display:
         #Initialize pygame
         pygame.init()
         self.screen_info = pygame.display.Info()
-        self.screen_width = 480 if "--test" in sys.argv else self.screen_info.current_w
-        self.screen_height = 320 if "--test" in sys.argv else self.screen_info.current_h
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE if "--test" in sys.argv else pygame.FULLSCREEN)
+        self.screen_width = 480
+        self.screen_height = 320
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+        #self.screen_width = 480 if "--test" in sys.argv else self.screen_info.current_w
+        #self.screen_height = 320 if "--test" in sys.argv else self.screen_info.current_h
+        #self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE if "--test" in sys.argv else pygame.FULLSCREEN)
 
         #Load images and scale them to fit the specified size
         self.images = {}
@@ -144,7 +147,7 @@ class Display:
 
     """
         
-    def displayText(surface, text, pos, font, color):
+    def displayText(self, surface, text, pos, font, color):
         collection = [word.split(' ') for word in text.splitlines()]
         space = font.size(' ')[0]
         x,y = pos
@@ -222,7 +225,7 @@ class Display:
 
     """
 
-    def displayContent(self, type, message, images):
+    def displayContent(self, type, message, images, pos=False):
         font = pygame.font.Font(self.textFont, self.textSize)
         background_color = self.colors['Background']
         border_color = self.colors[type]
@@ -234,7 +237,10 @@ class Display:
             offset = self.imageSize*counter[self.images[image]['type']] + 10
             self.screen.blit(self.images[image]['figure'], (self.images[image]['position'][0] - offset, self.images[image]['position'][1]))
             counter.update({self.images[image]['type'] : counter[self.images[image]['type']]+1})
-        self.displayTextCentered(self.screen, message, font, self.colors['Text'])
+        if pos:
+            self.displayText(self.screen, message, pos, font, self.colors['Text'])
+        else:
+            self.displayTextCentered(self.screen, message, font, self.colors['Text'])
         pygame.display.flip()
 
         

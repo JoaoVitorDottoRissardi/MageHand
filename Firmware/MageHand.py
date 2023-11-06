@@ -73,7 +73,7 @@ class MageHand:
     candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media&token=2915185d-1743-4c70-96ef-33248851865f"
     minVolume = 10
     maxCupVolume = 100
-    volumePerTurn = 2
+    volumePerTurn = 0.5
     def __init__(self):
         self.user = "kJyBx6wkKxblBQZn1Xc1BDLikH93"
         config = (Path.home() / ".config/MageHand/MageHandParameters.json").read_text()
@@ -200,7 +200,7 @@ class MageHand:
             return 'introduction'
         
         def stop_callback(**kargs):
-            self.machine.showGestureMessage('Confirm the Stop sign for 4 seconds to proceed', 'Info', ['Stop'])
+            self.machine.showGestureMessage('Confirm the Stop sign\nfor 4 seconds to proceed', 'Info', ['Stop'])
             return 'introduction'
         
         return self.gestureRecognizer.runState(
@@ -248,7 +248,7 @@ class MageHand:
             return "selection"
 
         def peace_callback(**kargs):
-            self.machine.showGestureMessage("Peace detected, hold for 4 seconds", "Info", ["Peace"])
+            self.machine.showGestureMessage("Peace detected\nhold for 4 seconds", "Info", ["Peace"])
             return "selection"
         def thumbsDown_callback(**kargs):
             self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds", "Info", ["ThumbsDown"])
@@ -318,12 +318,12 @@ class MageHand:
 
         def stop_callback(**kargs):
             self.machine.stopPouringCandy(self.selectedCandy)
-            self.machine.showGestureMessage("Stop detected, hold it for 4 seconds", "Confirm", ["Stop"])
+            self.machine.showGestureMessage("Stop detected\nhold it for 4 seconds", "Confirm", ["Stop"])
             self.storage1.write_text("{:.2f}".format(self.candy1.volume))
             self.storage1.write_text("{:.2f}".format(self.candy2.volume))
             return "pouring"
         def none_callback(**kargs):
-            self.machine.showGestureMessage("lost track of hand", "Alert", [])
+            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
             return "pouring"
 
         def thumbsDown_confirmationCallback(**kargs):
@@ -361,11 +361,11 @@ class MageHand:
         self.machine.showGestureMessage("Thumbs Down will reject the purchase \n Thumbs Up will go to payment \n Peace will return to buying candy", "Info", ["ThumbsUp", "ThumbsDown", "Peace"])
 
         def general_callback(**kargs):
-            self.machine.showGestureMessage("hold the gesture for 4 seconds", "Confirm", [])
+            self.machine.showGestureMessage("Hold the gesture for 4 seconds", "Confirm", [])
             return "decision"
 
         def none_callback(**kargs):
-            self.machine.showGestureMessage("lost track of hand", "Alert", [])
+            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
             return "decision"
 
         def thumbsDown_confirmationCallback(**kargs):
@@ -412,14 +412,14 @@ class MageHand:
             import io
             qrcode_b64 = self.paymentManager.createPayment(amount=round(amount, 2), description="candy bought with mage hand")
             if not qrcode_b64:
-                self.machine.showGestureMessage("Error creating payment - order cancelled", "Alert", ["ThumbsDown"])
+                self.machine.showGestureMessage("Error creating payment \n Order cancelled", "Alert", ["ThumbsDown"])
                 self.rejectCandies("Order was cancelled")
                 sleep(5)
                 return "introduction"
             qrcode = base64.b64decode(qrcode_b64)
             mem_file = io.BytesIO(qrcode)
             qrcode_img = pygame.image.load(mem_file)
-            qrcode_img = pygame.transform.scale(qrcode_img, (200, 200))
+            qrcode_img = pygame.transform.scale(qrcode_img, (240, 240))
 
 
         def thread1():
@@ -436,7 +436,7 @@ class MageHand:
 
         def thread2():
             def thumbsDown_callback(**kargs):
-                self.machine.showGestureMessage("Hold Thumbs Down for 4 seconds to cancel", "Confirm", ["ThumbsDown"])
+                self.machine.showGestureMessage("Hold Thumbs Down \n for 4 seconds to cancel", "Confirm", ["ThumbsDown"])
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
 
             def thumbsDown_confirmationCallback(**kargs):
@@ -444,8 +444,8 @@ class MageHand:
                 return "introduction"
 
             def normal_callback(**kargs):
-                self.machine.showGestureMessage("Here is your qrcode", "Confirm", ["ThumbsUp"])
-                self.machine.showImage(qrcode_img, make_surface=False, clear=False, pos=(200, 200))
+                self.machine.showGestureMessage("Here is your QRcode", "Confirm", ["ThumbsUp"], pos=(94, 24))
+                self.machine.showImage(qrcode_img, make_surface=False, clear=False, pos=(120, 70))
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
                 
 
@@ -464,7 +464,7 @@ class MageHand:
 
         if successEvent.is_set():
             self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
-            self.acceptCandies("Payment Successfull")
+            self.acceptCandies("Payment Successful")
         else:
             self.machine.showGestureMessage("Order was canceled", "Alert", [])
             self.rejectCandies("Order was cancelled")
@@ -496,9 +496,9 @@ class MageHand:
             print(event.event)
             data = json.loads(event.data)
             if event.event == 'put':
-                print("put: " + data)
+                print(f"put: {data}")
             elif event.event == "patch":
-                print("patch: " + data)
+                print(f"patch: {data}")
 
 
 
