@@ -88,13 +88,16 @@ class MageHand:
         self.dataDir = Path("/var/lib/MageHand")
         self.dataDir.mkdir(exist_ok=True)
 
+        self.storage1 = self.dataDir / "storage1.txt"
+        self.storage2 = self.dataDir / "storage2.txt"
+
         if (self.dataDir / "candyInformation.json").exists():
             candyFile = (self.dataDir / "candyInformation.json").read_text()
             candyData = json.loads(candyFile)
             c1 = candyData["Candy1"]
             c2 = candyData["Candy2"]
-            self.candy1 = Candy(c1["Name"], float(c1["Price"]), float(c1["Volume"]), c1["Image"])
-            self.candy2 = Candy(c2["Name"], float(c2["Price"]), float(c2["Volume"]), c2["Image"])
+            self.candy1 = Candy(c1["Name"], float(c1["Price"]), float(self.storage1.read_text()), 'images/candy1.png')
+            self.candy2 = Candy(c2["Name"], float(c2["Price"]), float(self.storage2.read_text()), 'images/candy2.png')
         else:
             self.getFirebaseCandyInformation()
 
@@ -123,8 +126,8 @@ class MageHand:
         histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
-            "Price1": self.candy1.price,
-            "Price2": self.candy2.price,
+            "Price1": self.candy1.price*self.cupVolume1[0],
+            "Price2": self.candy2.price*self.cupVolume2[0],
             "Quantity1": self.cupVolume1[0],
             "Quantity2": self.cupVolume2[0],
             "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
@@ -134,6 +137,8 @@ class MageHand:
         }},
          "OrderCount": index+1           }
         response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
+        response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
+
 
     def acceptCandies(self, reason):
         self.machine.acceptCandies()
@@ -142,8 +147,8 @@ class MageHand:
         histDict = { date.date().isoformat(): { date.time().isoformat("seconds"): {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
-            "Price1": self.candy1.price,
-            "Price2": self.candy2.price,
+            "Price1": self.candy1.price*self.cupVolume1[0],
+            "Price2": self.candy2.price*self.cupVolume2[0],
             "Quantity1": self.cupVolume1[0],
             "Quantity2": self.cupVolume2[0],
             "Total": (self.candy1.price*self.cupVolume1[0] + self.candy2.price*self.cupVolume2[0]),
@@ -314,6 +319,8 @@ class MageHand:
         def stop_callback(**kargs):
             self.machine.stopPouringCandy(self.selectedCandy)
             self.machine.showGestureMessage("Stop detected, hold it for 4 seconds", "Confirm", ["Stop"])
+            self.storage1.write_text("{:.2f}".format(self.candy1.volume))
+            self.storage1.write_text("{:.2f}".format(self.candy2.volume))
             return "pouring"
         def none_callback(**kargs):
             self.machine.showGestureMessage("lost track of hand", "Alert", [])
@@ -502,14 +509,14 @@ class MageHand:
             self.paymentManager.setPaymentKeys(json_resp["accessToken"])
 
     def getFirebaseCandyInformation(self):
-        #response = requests.get(MageHand.candy_1_storage_url)
-        #if response.status_code in [200, 201]:
-        #    with open('images/candy1.png', 'wb') as candy1:
-        #        candy1.write(response.content)
-        #response = requests.get(MageHand.candy_2_storage_url)
-        #if response.status_code in [200, 201]:
-        #    with open('images/candy2.png', 'wb') as candy2:
-        #        candy2.write(response.content)
+        response = requests.get(MageHand.candy_1_storage_url)
+        if response.status_code in [200, 201]:
+           with open('images/candy1.png', 'wb') as candy1:
+               candy1.write(response.content)
+        response = requests.get(MageHand.candy_2_storage_url)
+        if response.status_code in [200, 201]:
+           with open('images/candy2.png', 'wb') as candy2:
+               candy2.write(response.content)
         
         response = requests.get(MageHand.firebase_url + self.user + "/candyInformation.json")
         if response.status_code in [200, 201]:
