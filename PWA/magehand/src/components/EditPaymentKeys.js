@@ -191,13 +191,17 @@ function EditPaymentKeys() {
                     2: Hit the blue button to create your application.
                   </Typography>
                   <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
-                    3: Select your newly created application.
+                    3: When creating the application, select <b>"No"</b> for using an e-commerce 
+                    and <b>"CheckoutTransparente"</b> for which product you are integrating.
+                  </Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
+                    4: Select your newly created application.
                   </Typography>
                   <Typography variant="h9" sx={{fontFamily: 'PlaypenSans'}}>
-                    4: On the left side bar, click on <u>"Credenciais de Produção"</u>.
+                    5: On the left side bar, click on <u>"Credenciais de Produção"</u>.
                   </Typography>
                   <Typography variant="h9" sx={{fontFamily: 'PlaypenSans'}}>
-                    5: Copy your access token and insert it above.
+                    6: Copy your access token and insert it above.
                   </Typography>
                 </Stack>
             )}
