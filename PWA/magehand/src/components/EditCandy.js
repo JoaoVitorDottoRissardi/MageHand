@@ -93,17 +93,17 @@ function EditCandy() {
     get(child(dbRef, uid + '/candyInformation')).then( (snapshot) => {
       if(snapshot.exists()){
         getDownloadURL(stRef1).then((url) => {
-          setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, url : url});
+          setCandy1({ ...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price, url : url});
         }).catch((error) => {
           setSnackbarMessage(storageErrorCodes[error.code]);
-          setCandy1({name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
+          setCandy1({...candy1, name: snapshot.val().Candy1.Name, price: snapshot.val().Candy1.Price});
           setalertSeverity('warning');
           setOpen(true);
         })
         getDownloadURL(stRef2).then((url2) => {
-          setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, url : url2});
+          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price, url : url2});
         }).catch((error) => {
-          setCandy2({name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
+          setCandy2({...candy2, name: snapshot.val().Candy2.Name, price: snapshot.val().Candy2.Price});
           setSnackbarMessage(storageErrorCodes[error.code]);
           setalertSeverity('warning');
           setOpen(true);
@@ -121,7 +121,7 @@ function EditCandy() {
       setOpen(true);
       return;
     })
-  }, []);
+  });
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
