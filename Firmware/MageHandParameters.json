@@ -102,14 +102,14 @@
    },
    "motorParameters":{
       "1":{
-         "forward":23,
-         "backward":16,
-         "speed":0.2
+         "forward":14,
+         "backward":20,
+         "speed":1.0
       },
       "2":{
-         "forward":24,
-         "backward":20,
-         "speed":0.2
+         "forward":23,
+         "backward":16,
+         "speed":1.0
       }
    }
 }
