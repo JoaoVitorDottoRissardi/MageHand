@@ -125,7 +125,7 @@ class MageHand:
         self.machine.rejectCandies()
         date = datetime.datetime.now()
         index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
-        histDict = { f"{date.date().isoformat()}/{date.time().isoformat("seconds")}": {
+        histDict = { f"{date.date().isoformat()}/{date.time().isoformat('seconds')}": {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
             "Price1": self.cupPrice1[0],
@@ -146,7 +146,7 @@ class MageHand:
         self.machine.acceptCandies()
         date = datetime.datetime.now()
         index = requests.get(MageHand.firebase_url + self.user + "/OrderHistory/OrderCount.json").json()
-        histDict = { f"{date.date().isoformat()}/{date.time().isoformat("seconds")}": {
+        histDict = { f"{date.date().isoformat()}/{date.time().isoformat('seconds')}": {
             "Candy1Name": self.candy1.name,
             "Candy2Name": self.candy2.name,
             "Price1": self.cupPrice1[0],
@@ -311,7 +311,7 @@ class MageHand:
                 self.machine.stopPouringCandy(self.selectedCandy)
                 return "pouring"
 
-            self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]:.2} of {self.maxCupVolume:.2} \n Available: {c.volume:.2}\n Total price: {cupPrice[0]:.2}", ["Candy" + str(self.selectedCandy)])
+            self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]:.2f} of {self.maxCupVolume:.2f} \n Available: {c.volume:.2f}\n Total price: {cupPrice[0]:.2f}", ["Candy" + str(self.selectedCandy)])
             self.machine.pourCandy(self.selectedCandy)
             cup[0] += round(MageHand.volumePerTurn * delta_ms / 1000, 2)
             c.volume -= round(MageHand.volumePerTurn * delta_ms / 1000, 2)
@@ -327,7 +327,7 @@ class MageHand:
             self.machine.stopPouringCandy(self.selectedCandy)
             self.machine.showGestureMessage("Stop detected\nhold it for 4 seconds", "Confirm", ["Stop"])
             self.storage1.write_text("{:.2f}".format(self.candy1.volume))
-            self.storage1.write_text("{:.2f}".format(self.candy2.volume))
+            self.storage2.write_text("{:.2f}".format(self.candy2.volume))
             return "pouring"
         def none_callback(**kargs):
             self.machine.showGestureMessage("Lost track of hand", "Alert", [])
