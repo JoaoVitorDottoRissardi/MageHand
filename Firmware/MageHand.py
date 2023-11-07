@@ -69,8 +69,8 @@ phases: dict
 
 class MageHand:
     firebase_url = "https://mage-hand-demo-default-rtdb.firebaseio.com/"
-    candy_1_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy1.jpg?alt=media&token=360bde5e-8e45-4183-9bfd-0b5cbd087b29"
-    candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media&token=2915185d-1743-4c70-96ef-33248851865f"
+    candy_1_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy1.jpg?alt=media"
+    candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media"
     minVolume = 10
     maxCupVolume = 100
     volumePerTurn = 0.5
