@@ -42,7 +42,7 @@ app = initialize_app()
 #         return
 
 @db_fn.on_value_written(r"{uid}/CandyInformation")
-def syncedStatus():
+def syncedStatus(event: db_fn.Event[db_fn.Change]) -> None:
     # Set the "uppercase" field.
     print(f"Uppercasing {event.params['pushId']}: {original}")
     upper = original.upper()
@@ -74,7 +74,5 @@ def send_follower_notification(event: db_fn.Event[db_fn.Change]) -> None:
 
     # Clean up the tokens that are not registered any more.
     exception = response.exception
-    if not isinstance(exception, exceptions.FirebaseError):
-        continue
     message = exception.http_response.json()["error"]["message"]
     print(message)
