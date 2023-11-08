@@ -1,8 +1,8 @@
 # The Cloud Functions for Firebase SDK to create Cloud Functions and set up triggers.
-from firebase_functions import firestore_fn, https_fn, db_fn
+from firebase_functions import db_fn
 
 # The Firebase Admin SDK to access Cloud Firestore.
-from firebase_admin import initialize_app, firestore, auth, db, messaging, exceptions
+from firebase_admin import initialize_app, db, messaging, exceptions
 import firebase_admin
 
 app = initialize_app()
@@ -62,9 +62,9 @@ def send_follower_notification(event: db_fn.Event[db_fn.Change]) -> None:
     change = event.data
     print(change)
     if change.after:
-        body=f"{uid} machine is online!"
+        body = "machine is online!"
     else:
-        body=f"{uid} machine is offline!",
+        body = "machine is offline!"
     print("uid: " + uid)
     token_ref = db.reference(f"{uid}/notificationToken")
     notification_token = token_ref.get()
@@ -83,6 +83,6 @@ def send_follower_notification(event: db_fn.Event[db_fn.Change]) -> None:
     response: messaging.Response = messaging.send(msg)
 
     # Clean up the tokens that are not registered any more.
-    exception = response.exception
-    message = exception.http_response.json()["error"]["message"]
-    print(message)
+    # exception = response.exception
+    # message = exception.http_response.json()["error"]["message"]
+    # print(message)
