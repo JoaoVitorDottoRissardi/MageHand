@@ -1,9 +1,9 @@
 # The Cloud Functions for Firebase SDK to create Cloud Functions and set up triggers.
-from firebase_functions import firestore_fn, https_fn
+from firebase_functions import firestore_fn, https_fn, db_fn
 
 # The Firebase Admin SDK to access Cloud Firestore.
-from firebase_admin import initialize_app, firestore
-import google.cloud.firestore
+from firebase_admin import initialize_app, firestore, auth, db, messaging, exceptions
+import firebase_admin
 
 app = initialize_app()
 
@@ -41,12 +41,12 @@ app = initialize_app()
 #         # No "original" field, so do nothing.
 #         return
 
-@db_fn.on_value_written(r"{uid}/CandyInformation")
-def syncedStatus(event: db_fn.Event[db_fn.Change]) -> None:
-    # Set the "uppercase" field.
-    print(f"Uppercasing {event.params['pushId']}: {original}")
-    upper = original.upper()
-    event.data.reference.update({"uppercase": upper})
+# @db_fn.on_value_written(reference=r"{uid}/CandyInformation")
+# def syncedStatus(event: db_fn.Event[db_fn.Change]) -> None:
+#     # Set the "uppercase" field.
+#     print(f"Uppercasing {event.params['pushId']}: {original}")
+#     upper = original.upper()
+#     event.data.reference.update({"uppercase": upper})
 
 @db_fn.on_value_written(reference=r"{uid}/Online")
 def send_follower_notification(event: db_fn.Event[db_fn.Change]) -> None:
@@ -60,12 +60,22 @@ def send_follower_notification(event: db_fn.Event[db_fn.Change]) -> None:
 
     # If un-follow we exit the function.
     change = event.data
+    print(change)
+    if change.after:
+        body=f"{uid} machine is online!"
+    else:
+        body=f"{uid} machine is offline!",
+    print("uid: " + uid)
     token_ref = db.reference(f"{uid}/notificationToken")
     notification_token = token_ref.get()
+    print(notification_token)
+    if not notification_token:
+        print("no notification token")
+        return
 
     notification = messaging.Notification(
         title="Cloud Function!",
-        body=f"{uid} is now following you.",
+        body=body,
     )
 
     # Send notifications to all tokens.
