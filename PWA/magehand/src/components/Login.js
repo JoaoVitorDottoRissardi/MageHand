@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {app, authErrorCodes} from '../firebase/config'
+import {app, authErrorCodes, getTken} from '../firebase/config'
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getDatabase, ref as databaseRef, update} from "firebase/database";
 import { Container, Typography, TextField, Button, Stack, Box, InputAdornment, IconButton, Snackbar, Alert } from '@mui/material';
 import LoginIcon from '@mui/icons-material/Login';
 import VisibilityIcon from '@mui/icons-material/Visibility'; 
@@ -19,10 +20,24 @@ function Login() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const auth = getAuth(app);
 
+  const [isTokenFound, setTokenFound] = useState(false);
+
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        navigate('/main');
+        getTken(setTokenFound).then((token) => {
+          const dbRef = databaseRef(getDatabase(app));
+          const updates = {};
+          updates['/' + userCredential.user.uid + '/notificationToken'] = token;
+          update(dbRef, updates).then((update) => {
+          }).catch((error) => {
+            setSnackbarMessage(error.code);
+            setOpen(true);
+          })
+          navigate('/main');
+        }).catch((error) => {
+          console.log(error);
+        });
       })
       .catch(error => {
         setSnackbarMessage(authErrorCodes[error.code]);
