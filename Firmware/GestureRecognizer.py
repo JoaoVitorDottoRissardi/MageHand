@@ -35,7 +35,7 @@ class GestureRecognizer:
         self.cap = cv2.VideoCapture(0)
         if not self.cap.isOpened():
             raise Exception('a')
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 0)
+        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         
         BaseOptions = mp.tasks.BaseOptions
         HandLandmarker = mp.tasks.vision.HandLandmarker

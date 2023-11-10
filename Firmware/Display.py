@@ -72,7 +72,7 @@ class Display:
         self.screen_info = pygame.display.Info()
         self.screen_width = 480
         self.screen_height = 320
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.FULLSCREEN)
         #self.screen_width = 480 if "--test" in sys.argv else self.screen_info.current_w
         #self.screen_height = 320 if "--test" in sys.argv else self.screen_info.current_h
         #self.screen = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE if "--test" in sys.argv else pygame.FULLSCREEN)
