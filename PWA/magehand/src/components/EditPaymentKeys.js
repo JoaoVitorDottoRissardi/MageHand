@@ -28,6 +28,8 @@ function EditPaymentKeys() {
   const [loginTimeout, setLoginTimeout] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(true);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (loginTimeout) {
       const timeout = setTimeout(() => {
@@ -63,6 +65,8 @@ function EditPaymentKeys() {
       setUpdateSuccessful(false);
       setOpen(true);
       setSnackbarMessage(error.code);
+    }).finally(() => {
+      setLoading(false);
     })
   }, []);
 
@@ -129,7 +133,8 @@ function EditPaymentKeys() {
             display="flex" 
             flexDirection="column" 
         >
-            <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Payment Key 🗝️</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Payment Key 🗝️</Typography>
+          {!loading && <>
             <TextField
             label="Access Token"
             type={showToken ? 'text' : 'password'} 
@@ -206,6 +211,8 @@ function EditPaymentKeys() {
                 </Stack>
             )}
             {loginTimeout && <CircularProgress />}
+          </>}
+          {loading &&  <CircularProgress />}
         </Stack>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={updateSuccessful ? 'success' : "error"} sx={{ width: '100%' }}>

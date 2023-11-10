@@ -67,6 +67,8 @@ function EditCandy() {
   const [loginTimeout, setLoginTimeout] = useState(false);
   const [alertSeverity, setalertSeverity] = useState('');
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (loginTimeout) {
       const timeout = setTimeout(() => {
@@ -77,6 +79,9 @@ function EditCandy() {
   }, [loginTimeout, navigate]);
 
   useEffect(() => {
+
+    console.log('oi');
+
     if(auth.currentUser === null){
       setalertSeverity('error');
       setOpen(true);
@@ -120,8 +125,10 @@ function EditCandy() {
       setalertSeverity('error');
       setOpen(true);
       return;
+    }).finally(() => {
+      setLoading(false);
     })
-  });
+  }, []);
 
   const handleClose = (event, reason) => {
     if (reason === 'clickaway') {
@@ -270,189 +277,192 @@ function EditCandy() {
             flexDirection="column" 
         >
           <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Candies 🍬</Typography>
-            <Paper 
-              elevation={15}
-              fullWidth
-              style={{borderRadius: '10px', backgroundColor: '#469Fd17f', padding: '5%'}}
-            >
-              <Stack
-                spacing={2}
-                direction="row"
-                marginBottom='5%'
-                justifyContent="space-between"
+            {!loading && <>
+              <Paper 
+                elevation={15}
+                fullWidth
+                style={{borderRadius: '10px', backgroundColor: '#469Fd17f', padding: '5%'}}
               >
-                <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Candy #1</u></Typography>
-                <Fab color="primary" aria-label="edit" size='small' onClick={handleEditCandy1}>
-                  <EditIcon style={{ color: editingCandy1 ? 'black' : 'white' }} />
-                </Fab>
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-              >
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy name:</Typography>
-                <TextField
-                  variant='standard'
-                  value={candy1.name}
-                  sx={{width: '62.5%', margin: '0px'}}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 15) {
-                      setCandy1({ ...candy1, name: e.target.value });
-                    }
-                  }}
-                  disabled={!editingCandy1}
-                />
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-              >
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy price/mL:</Typography>
-                <TextField
-                  variant='standard'
-                  value={candy1.price}
-                  type='number'
-                  sx={{width: '55%', margin: '0px'}}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
-                      setCandy1({ ...candy1, price: inputValue });
-                    }
-                  }}
-                  disabled={!editingCandy1}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">R$</InputAdornment>
-                  }}
-                />
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-                marginTop="5%"
-                position="relative"
-              >
-                <Avatar
-                  src={candy1.url ? candy1.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
-                  alt={candy1.name}
-                />
-                {editingImage1 && (
-                  <IconButton
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      backgroundColor: 'white',
-                      borderRadius: '50%',
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  marginBottom='5%'
+                  justifyContent="space-between"
+                >
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Candy #1</u></Typography>
+                  <Fab color="primary" aria-label="edit" size='small' onClick={handleEditCandy1}>
+                    <EditIcon style={{ color: editingCandy1 ? 'black' : 'white' }} />
+                  </Fab>
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                >
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy name:</Typography>
+                  <TextField
+                    variant='standard'
+                    value={candy1.name}
+                    sx={{width: '62.5%', margin: '0px'}}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 15) {
+                        setCandy1({ ...candy1, name: e.target.value });
+                      }
                     }}
-                    onClick={handleImageUpload1}
-                  >
-                    <CloudUploadIcon />
-                  </IconButton>
-                )}
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >👈 Candy image</Typography>
-              </Stack>
-            </Paper>
-            <Paper 
-              elevation={15}
-              fullWidth
-              style={{borderRadius: '10px', backgroundColor: '#CFCF007f', padding: '5%'}}
-            >
-              <Stack
-                spacing={2}
-                direction="row"
-                marginBottom='5%'
-                justifyContent="space-between"
-              >
-                <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Candy #2</u></Typography>
-                <Fab color="primary" aria-label="edit" size='small' onClick={handleEditCandy2} sx={fabYellowStyle}>
-                  <EditIcon style={{ color: editingCandy2 ? 'black' : 'white' }} />
-                </Fab>
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-              >
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy name:</Typography>
-                <TextField
-                  variant='standard'
-                  value={candy2.name}
-                  sx={{width: '62.5%', margin: '0px'}}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 15) {
-                      setCandy2({ ...candy2, name: e.target.value });
-                    }
-                  }}
-                  disabled={!editingCandy2}
-                />
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-              >
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy price/mL:</Typography>
-                <TextField
-                  variant='standard'
-                  value={candy2.price}
-                  type='number'
-                  sx={{width: '55%', margin: '0px'}}
-                  onChange={(e) => {
-                    const inputValue = e.target.value;
-                    if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
-                      setCandy1({ ...candy1, price: inputValue });
-                    }
-                  }}
-                  disabled={!editingCandy2}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">R$</InputAdornment>
-                  }}
-                />
-              </Stack>
-              <Stack
-                spacing={2}
-                direction="row"
-                marginTop="5%"
-                position="relative"
-              >
-                <Avatar
-                  src={candy2.url ? candy2.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
-                  alt={candy2.name}
-                />
-                {editingImage2 && (
-                  <IconButton
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      backgroundColor: 'white',
-                      borderRadius: '50%',
+                    disabled={!editingCandy1}
+                  />
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                >
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy price/mL:</Typography>
+                  <TextField
+                    variant='standard'
+                    value={candy1.price}
+                    type='number'
+                    sx={{width: '55%', margin: '0px'}}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
+                        setCandy1({ ...candy1, price: inputValue });
+                      }
                     }}
-                    onClick={handleImageUpload2}
-                  >
-                    <CloudUploadIcon />
-                  </IconButton>
-                )}
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >⬅️ Candy image</Typography>
-              </Stack>
-            </Paper>
-            <Button 
-              variant="contained"
-              fullWidth 
-              onClick={handleSaveCandies}
-              sx={{fontFamily: 'PlaypenSans'}}  
-              endIcon={<CheckIcon />}
-            >
-                Save
-            </Button>
-            <Button 
-              variant="contained"
-              fullWidth 
-              onClick={() => navigate('/main') }
-              sx={{fontFamily: 'PlaypenSans'}}  
-              endIcon={<ArrowBackIcon />}
-            >
-                Back
-            </Button>
-            {loginTimeout && <CircularProgress />}
+                    disabled={!editingCandy1}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">R$</InputAdornment>
+                    }}
+                  />
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  marginTop="5%"
+                  position="relative"
+                >
+                  <Avatar
+                    src={candy1.url ? candy1.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
+                    alt={candy1.name}
+                  />
+                  {editingImage1 && (
+                    <IconButton
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                      }}
+                      onClick={handleImageUpload1}
+                    >
+                      <CloudUploadIcon />
+                    </IconButton>
+                  )}
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >👈 Candy image</Typography>
+                </Stack>
+              </Paper>
+              <Paper 
+                elevation={15}
+                fullWidth
+                style={{borderRadius: '10px', backgroundColor: '#CFCF007f', padding: '5%'}}
+              >
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  marginBottom='5%'
+                  justifyContent="space-between"
+                >
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Candy #2</u></Typography>
+                  <Fab color="primary" aria-label="edit" size='small' onClick={handleEditCandy2} sx={fabYellowStyle}>
+                    <EditIcon style={{ color: editingCandy2 ? 'black' : 'white' }} />
+                  </Fab>
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                >
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy name:</Typography>
+                  <TextField
+                    variant='standard'
+                    value={candy2.name}
+                    sx={{width: '62.5%', margin: '0px'}}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 15) {
+                        setCandy2({ ...candy2, name: e.target.value });
+                      }
+                    }}
+                    disabled={!editingCandy2}
+                  />
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                >
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '0.75%'}} >Candy price/mL:</Typography>
+                  <TextField
+                    variant='standard'
+                    value={candy2.price}
+                    type='number'
+                    sx={{width: '55%', margin: '0px'}}
+                    onChange={(e) => {
+                      const inputValue = e.target.value;
+                      if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
+                        setCandy1({ ...candy1, price: inputValue });
+                      }
+                    }}
+                    disabled={!editingCandy2}
+                    InputProps={{
+                      startAdornment: <InputAdornment position="start">R$</InputAdornment>
+                    }}
+                  />
+                </Stack>
+                <Stack
+                  spacing={2}
+                  direction="row"
+                  marginTop="5%"
+                  position="relative"
+                >
+                  <Avatar
+                    src={candy2.url ? candy2.url : process.env.PUBLIC_URL + '/candyImages/Undefined.png'}
+                    alt={candy2.name}
+                  />
+                  {editingImage2 && (
+                    <IconButton
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        borderRadius: '50%',
+                      }}
+                      onClick={handleImageUpload2}
+                    >
+                      <CloudUploadIcon />
+                    </IconButton>
+                  )}
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >⬅️ Candy image</Typography>
+                </Stack>
+              </Paper>
+              <Button 
+                variant="contained"
+                fullWidth 
+                onClick={handleSaveCandies}
+                sx={{fontFamily: 'PlaypenSans'}}  
+                endIcon={<CheckIcon />}
+              >
+                  Save
+              </Button>
+              <Button 
+                variant="contained"
+                fullWidth 
+                onClick={() => navigate('/main') }
+                sx={{fontFamily: 'PlaypenSans'}}  
+                endIcon={<ArrowBackIcon />}
+              >
+                  Back
+              </Button>
+              {loginTimeout && <CircularProgress />}
+            </>}
+            {loading && <CircularProgress />}
         </Stack>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={alertSeverity} sx={{ width: '100%' }}>

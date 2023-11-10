@@ -36,6 +36,8 @@ function SeePurchaseHistory() {
   const currentDate = dayjs();
   const [date, setDate] = useState(currentDate);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     if (loginTimeout) {
       const timeout = setTimeout(() => {
@@ -75,6 +77,8 @@ function SeePurchaseHistory() {
       setUpdateSuccessful(false);
       setOpen(true);
       setSnackbarMessage(error.code);
+    }).finally(() => {
+      setLoading(false);
     })
   }, [date, auth.currentUser, dbRef]);
 
@@ -98,102 +102,105 @@ function SeePurchaseHistory() {
           flexDirection="column" 
       >
         <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Order History 📜</Typography>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DemoContainer components={['DatePicker']}>
-            <DatePicker 
-              label="Filter the orders per date" 
-              sx={{width: '350px'}}
-              onChange={(newValue) => setDate(newValue)}
-              value={date}
-            />
-          </DemoContainer>
-        </LocalizationProvider>
-        {noOrders && <Typography variant="h5" style={{fontFamily: 'PlaypenSans', color: 'grey'}}>No Orders found for this date!</Typography>}
-        <div className="scrollable-container" style={{maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', paddingLeft: '5%', minWidth: '350px'}}>
-        {Object.keys(purchaseHistory).map((key, index) => (
-          <Paper 
-            key={index} 
-            elevation={3} 
-            style={{ 
-              padding: '1rem', 
-              margin: '1rem 0', 
-              width: '85%', 
-              borderRadius: '5%',
-              overflow: 'hidden',
-            }}
-          >
-            <Stack
-              spacing={1.5}
-              direction="column"
+        {!loading && <>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DemoContainer components={['DatePicker']}>
+              <DatePicker 
+                label="Filter the orders per date" 
+                sx={{width: '350px'}}
+                onChange={(newValue) => setDate(newValue)}
+                value={date}
+              />
+            </DemoContainer>
+          </LocalizationProvider>
+          {noOrders && <Typography variant="h5" style={{fontFamily: 'PlaypenSans', color: 'grey'}}>No Orders found for this date!</Typography>}
+          <div className="scrollable-container" style={{maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', paddingLeft: '5%', minWidth: '350px'}}>
+          {Object.keys(purchaseHistory).map((key, index) => (
+            <Paper 
+              key={index} 
+              elevation={3} 
+              style={{ 
+                padding: '1rem', 
+                margin: '1rem 0', 
+                width: '85%', 
+                borderRadius: '5%',
+                overflow: 'hidden',
+              }}
             >
               <Stack
-                spacing={2}
-                direction="row"
-                justifyContent="space-between"
+                spacing={1.5}
+                direction="column"
               >
-                <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Order #{purchaseHistory[key].Index}</u> 🍭</Typography>
-                <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>{key}</Typography>
-              </Stack>
-              <Table size='small' aria-label="a dense table">
-                <TableBody>
-                  <TableRow>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy1Name}: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity1.toFixed(2)} ml</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
-                      R$ {(purchaseHistory[key].Price1).toFixed(2)}
-                    </Typography></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy2Name}: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2.toFixed(2)} ml</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
-                      R$ {(purchaseHistory[key].Price2 ).toFixed(2)}
-                    </Typography></TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>Total: </Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{(purchaseHistory[key].Quantity2 + purchaseHistory[key].Quantity1).toFixed(2)} ml</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
-                    <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
-                      R$ {(purchaseHistory[key].Price2 + purchaseHistory[key].Price1 ).toFixed(2)}
-                    </Typography></TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-              <Stack
-                spacing={2}
-                direction="row"
-              >
-                <Typography sx={{fontFamily: 'PlaypenSans'}} >Order Status: </Typography>
-                <Typography sx={{fontFamily: 'PlaypenSans'}}  style={{color: purchaseHistory[key].Status === 'Rejected' ? 'red' : 'green'}}>
-                  {purchaseHistory[key].Status}{purchaseHistory[key].Status === 'Rejected' ? ' ⛔' : ' ✅'}
-                </Typography>
-              </Stack>
-              { purchaseHistory[key].Status === 'Rejected' &&
                 <Stack
-                  spacing={0.5}
+                  spacing={2}
+                  direction="row"
+                  justifyContent="space-between"
+                >
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Order #{purchaseHistory[key].Index}</u> 🍭</Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>{key}</Typography>
+                </Stack>
+                <Table size='small' aria-label="a dense table">
+                  <TableBody>
+                    <TableRow>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy1Name}: </Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity1.toFixed(2)} ml</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                        R$ {(purchaseHistory[key].Price1).toFixed(2)}
+                      </Typography></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy2Name}: </Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2.toFixed(2)} ml</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                        R$ {(purchaseHistory[key].Price2 ).toFixed(2)}
+                      </Typography></TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>Total: </Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{(purchaseHistory[key].Quantity2 + purchaseHistory[key].Quantity1).toFixed(2)} ml</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                        R$ {(purchaseHistory[key].Price2 + purchaseHistory[key].Price1 ).toFixed(2)}
+                      </Typography></TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+                <Stack
+                  spacing={2}
                   direction="row"
                 >
-                  <SubdirectoryArrowRightIcon />
-                  <Typography sx={{fontFamily: 'PlaypenSans'}}>Rejection reason: {purchaseHistory[key].RejectionReason}</Typography> 
+                  <Typography sx={{fontFamily: 'PlaypenSans'}} >Order Status: </Typography>
+                  <Typography sx={{fontFamily: 'PlaypenSans'}}  style={{color: purchaseHistory[key].Status === 'Rejected' ? 'red' : 'green'}}>
+                    {purchaseHistory[key].Status}{purchaseHistory[key].Status === 'Rejected' ? ' ⛔' : ' ✅'}
+                  </Typography>
                 </Stack>
-              }
-            </Stack> 
-          </Paper>
-        ))}
-        </div>
-        <Button 
-          variant="contained"
-          fullWidth 
-          onClick={() => navigate('/main') }
-          sx={{fontFamily: 'PlaypenSans'}}  
-          endIcon={<ArrowBackIcon />}
-        >
-            Back
-        </Button>
-        {loginTimeout && <CircularProgress />}
+                { purchaseHistory[key].Status === 'Rejected' &&
+                  <Stack
+                    spacing={0.5}
+                    direction="row"
+                  >
+                    <SubdirectoryArrowRightIcon />
+                    <Typography sx={{fontFamily: 'PlaypenSans'}}>Rejection reason: {purchaseHistory[key].RejectionReason}</Typography> 
+                  </Stack>
+                }
+              </Stack> 
+            </Paper>
+          ))}
+          </div>
+          <Button 
+            variant="contained"
+            fullWidth 
+            onClick={() => navigate('/main') }
+            sx={{fontFamily: 'PlaypenSans'}}  
+            endIcon={<ArrowBackIcon />}
+          >
+              Back
+          </Button>
+          {loginTimeout && <CircularProgress />}
+        </>}
+        {loading && <CircularProgress />}
       </Stack>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={updateSuccessful ? 'success' : "error"} sx={{ width: '100%' }}>
