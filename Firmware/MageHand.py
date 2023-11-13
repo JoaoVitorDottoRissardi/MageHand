@@ -68,6 +68,7 @@ phases: dict
 """
 
 class MageHand:
+    functions_url = "https://us-central1-mage-hand-demo.cloudfunctions.net"
     firebase_url = "https://mage-hand-demo-default-rtdb.firebaseio.com/"
     candy_1_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy1.jpg?alt=media"
     candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media"
@@ -83,6 +84,8 @@ class MageHand:
         self.gestureRecognizer = GestureRecognizer()
         self.paymentManager = PaymentManager()
 
+
+        self.sync = threading.Event()
         self.firebaseThread = threading.Thread(target=self.firebaseCallbackFunction)
 
         self.dataDir = Path("/var/lib/MageHand")
@@ -480,17 +483,16 @@ class MageHand:
         return "introduction"
 
     def syncFirebase(self):
+        if not self.sync.is_set():
+            return
+        self.sync.clear()
         self.machine.showGestureMessage("Syncing with remote database \n Please wait", "Info", [])
         sleep(1)
-        response = requests.get(MageHand.firebase_url + self.user + "/synced.json")
-        if response.status_code in [200, 201]:
-            synced = response.json()
-            if not synced:
-                self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information from database", "Alert", [])
-                sleep(2)
-                self.getFirebaseCandyInformation()
-                self.getFirebasePaymentKeys()
-                response = requests.put(MageHand.firebase_url + self.user + "/SyncStatus.json", data=json.dumps(True))
+        if not self.sync.is_set():
+            return
+        self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information from database", "Alert", [])
+        sleep(2)
+        self.getFirebaseCandyInformation()
     """
         Function to set up firebase listener
     """
@@ -502,10 +504,13 @@ class MageHand:
             print(f"Received event {event}")
             print(event.event)
             data = json.loads(event.data)
+            if event.event == 'put' or event.event == "patch":
+                self.sync.set()
             if event.event == 'put':
                 print(f"put: {data}")
             elif event.event == "patch":
                 print(f"patch: {data}")
+            requests.post(MageHand.functions_url + "/machine_is_online", params={"uid": self.user})
 
 
 
@@ -533,12 +538,18 @@ class MageHand:
             c2 = json_resp["Candy2"]
             c1["Image"] = 'images/candy1.png'
             c2["Image"] = 'images/candy2.png'
-            self.candy1 = Candy(c1["Name"], float(c1["Price"]), float(c1["Volume"]), c1["Image"])
-            self.candy2 = Candy(c2["Name"], float(c2["Price"]), float(c2["Volume"]), c2["Image"])
+            newVolume1 = float(c1["Replenish"]) + self.candy1.volume
+            newVolume2 = float(c2["Replenish"]) + self.candy2.volume
+            self.candy1 = Candy(c1["Name"], float(c1["Price"]), newVolume1, c1["Image"])
+            self.candy2 = Candy(c2["Name"], float(c2["Price"]), newVolume2, c2["Image"])
             (self.dataDir / "candyInformation.json").write_text(json.dumps({"Candy1": c1, "Candy2": c2}))
+            response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume, "Candy1/Replenish": 0, "Candy2/Replenish": 0 }))
 
 if __name__ == '__main__':
     mage = MageHand()
-    p = mage.bootPhaseFunction()
-    while True:
-        p = mage.phases[p]()
+    try:
+        p = mage.bootPhaseFunction()
+        while True:
+            p = mage.phases[p]()
+    except KeyboardInterrupt:
+        requests.post(MageHand.functions_url + "/machine_is_offline", params={"uid": mage.user}, timeout=0)
