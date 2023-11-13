@@ -84,8 +84,8 @@ function ReplenishCandy() {
     const uid = auth.currentUser.uid;
   
     const updates = {};
-    updates['/' + uid + '/candyInformation/Candy1/Volume'] = candy1Volume + addCandy1Volume;
-    updates['/' + uid + '/candyInformation/Candy2/Volume'] = candy2Volume + addCandy2Volume;
+    updates['/' + uid + '/candyInformation/Candy1/Replenish'] = addCandy1Volume;
+    updates['/' + uid + '/candyInformation/Candy2/Replenish'] = addCandy2Volume;
 
     setCandy1Volume(candy1Volume + addCandy1Volume);
     setCandy2Volume(candy2Volume + addCandy2Volume);
