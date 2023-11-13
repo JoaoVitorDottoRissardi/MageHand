@@ -218,8 +218,8 @@ class Machine:
 
     """
 
-    def showSelectionMessage(self, message, candy):     
-        self.display.displayContent('Info', message, [candy, 'Info'])
+    def showSelectionMessage(self, message, candy, gestures=[]):     
+        self.display.displayContent('Info', message, [candy, 'Info'] + gestures)
 
     """
         Function to update the image of a certain candy

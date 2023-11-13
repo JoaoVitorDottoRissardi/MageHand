@@ -42,7 +42,7 @@
             215
          ]
       },
-      "textSize":30,
+      "textSize":26,
       "textFont":"AbrilFatface-Regular.ttf",
       "borderWidth":20,
       "images":{
@@ -92,12 +92,12 @@
       "1":{
          "pin":2,
          "angleStep":1,
-         "speed":90
+         "speed":40
       },
       "2":{
          "pin":3,
          "angleStep":1,
-         "speed":90
+         "speed":40
       }
    },
    "motorParameters":{
