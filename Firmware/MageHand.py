@@ -66,6 +66,18 @@ phases: dict
     dictionary containing a mapping of strings to phase functions, so that phase transistions are not nested calls (see end of file)
 
 """
+import socket
+def is_connected():
+  try:
+    # See if we can resolve the host name - tells us if there is
+    # A DNS listening
+    # Connect to the host - tells us if the host is actually reachable
+    s = socket.create_connection(("one.one.one.one", 80), 2)
+    s.close()
+    return True
+  except Exception:
+     pass # We ignore any errors, returning False
+  return False
 
 class MageHand:
     functions_url = "https://us-central1-mage-hand-demo.cloudfunctions.net"
