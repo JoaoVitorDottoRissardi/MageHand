@@ -276,11 +276,17 @@ function EditCandy() {
             display="flex" 
             flexDirection="column" 
         >
-          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Candies 🍬</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+            Edit Candies&nbsp; 
+            <img
+              src="/assets/windows-11-emojis/candy_1f36c.png"
+              alt="🍬"
+              style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+            />
+          </Typography>
             {!loading && <>
               <Paper 
                 elevation={15}
-                fullWidth
                 style={{borderRadius: '10px', backgroundColor: '#469Fd17f', padding: '5%'}}
               >
                 <Stack
@@ -357,12 +363,18 @@ function EditCandy() {
                       <CloudUploadIcon />
                     </IconButton>
                   )}
-                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >👈 Candy image</Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >
+                    <img
+                      src="/assets/windows-11-emojis/backhand-index-pointing-left_1f448.png"
+                      alt="👈"
+                      style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                    />
+                    &nbsp;Candy image
+                  </Typography>
                 </Stack>
               </Paper>
               <Paper 
                 elevation={15}
-                fullWidth
                 style={{borderRadius: '10px', backgroundColor: '#CFCF007f', padding: '5%'}}
               >
                 <Stack
@@ -439,7 +451,14 @@ function EditCandy() {
                       <CloudUploadIcon />
                     </IconButton>
                   )}
-                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >⬅️ Candy image</Typography>
+                  <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}} style={{marginTop: '2.25%'}} >
+                    <img
+                      src="/assets/windows-11-emojis/left-arrow_2b05-fe0f.png"
+                      alt="⬅️"
+                      style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                    />
+                    &nbsp;Candy image
+                  </Typography>
                 </Stack>
               </Paper>
               <Button 
@@ -465,7 +484,7 @@ function EditCandy() {
             {loading && <CircularProgress />}
         </Stack>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity={alertSeverity} sx={{ width: '100%' }}>
+        <Alert onClose={handleClose} severity={alertSeverity === 'success' ? 'success' : 'error'} sx={{ width: '100%' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

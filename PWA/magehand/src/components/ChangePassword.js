@@ -77,7 +77,14 @@ function ChangePassword() {
             display="flex" 
             flexDirection="column" 
         >
-          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Change Password 🔐</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+            Change Password&nbsp; 
+            <img
+              src="/assets/windows-11-emojis/locked-with-key_1f510.png"
+              alt="🔐"
+              style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+            />
+          </Typography>
           <TextField
             label="New Password"
             type={showPassword ? 'text' : 'password'} 

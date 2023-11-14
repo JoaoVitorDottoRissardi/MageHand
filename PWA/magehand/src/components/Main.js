@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import { NavLink } from 'react-router-dom';
 import { Container, Typography, Button, Stack } from '@mui/material';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
@@ -23,7 +23,14 @@ function Main() {
                 display="flex" 
                 flexDirection="column" 
             >
-                <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Mage Hand 👋</Typography>
+                <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+                    Mage Hand&nbsp; 
+                    <img
+                    src="/assets/windows-11-emojis/waving-hand_1f44b.png"
+                    alt="👋"
+                    style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                    />
+                </Typography>
                 <Button 
                     variant="contained"  
                     component={NavLink} 

@@ -101,7 +101,14 @@ function SeePurchaseHistory() {
           display="flex" 
           flexDirection="column" 
       >
-        <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Order History 📜</Typography>
+        <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+          Order History&nbsp; 
+          <img
+          src="/assets/windows-11-emojis/scroll_1f4dc.png"
+          alt="📜"
+          style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+          />
+        </Typography>
         {!loading && <>
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DemoContainer components={['DatePicker']}>
@@ -136,7 +143,14 @@ function SeePurchaseHistory() {
                   direction="row"
                   justifyContent="space-between"
                 >
-                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>Order #{purchaseHistory[key].Index}</u> 🍭</Typography>
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}><u>
+                    Order #{purchaseHistory[key].Index}</u>&nbsp; 
+                      <img
+                        src="/assets/windows-11-emojis/lollipop_1f36d.png"
+                        alt="🍭"
+                        style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                      />
+                  </Typography>
                   <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>{key}</Typography>
                 </Stack>
                 <Table size='small' aria-label="a dense table">
@@ -144,7 +158,13 @@ function SeePurchaseHistory() {
                     <TableRow>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy1Name}: </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity1.toFixed(2)} ml</Typography></TableCell>
-                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                          <img
+                            src="/assets/windows-11-emojis/backhand-index-pointing-right_1f449.png"
+                            alt="👉"
+                            style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                          />
+                        </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
                         R$ {(purchaseHistory[key].Price1).toFixed(2)}
                       </Typography></TableCell>
@@ -152,7 +172,13 @@ function SeePurchaseHistory() {
                     <TableRow>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Candy2Name}: </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{purchaseHistory[key].Quantity2.toFixed(2)} ml</Typography></TableCell>
-                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                          <img
+                            src="/assets/windows-11-emojis/backhand-index-pointing-right_1f449.png"
+                            alt="👉"
+                            style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                          />
+                        </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
                         R$ {(purchaseHistory[key].Price2 ).toFixed(2)}
                       </Typography></TableCell>
@@ -160,7 +186,13 @@ function SeePurchaseHistory() {
                     <TableRow>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>Total: </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>{(purchaseHistory[key].Quantity2 + purchaseHistory[key].Quantity1).toFixed(2)} ml</Typography></TableCell>
-                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>👉</Typography></TableCell>
+                      <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
+                          <img
+                            src="/assets/windows-11-emojis/backhand-index-pointing-right_1f449.png"
+                            alt="👉"
+                            style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                          />
+                        </Typography></TableCell>
                       <TableCell><Typography sx={{fontFamily: 'PlaypenSans'}}>
                         R$ {(purchaseHistory[key].Price2 + purchaseHistory[key].Price1 ).toFixed(2)}
                       </Typography></TableCell>
@@ -173,18 +205,33 @@ function SeePurchaseHistory() {
                 >
                   <Typography sx={{fontFamily: 'PlaypenSans'}} >Order Status: </Typography>
                   <Typography sx={{fontFamily: 'PlaypenSans'}}  style={{color: purchaseHistory[key].Status === 'Rejected' ? 'red' : 'green'}}>
-                    {purchaseHistory[key].Status}{purchaseHistory[key].Status === 'Rejected' ? ' ⛔' : ' ✅'}
+                    {purchaseHistory[key].Status}{purchaseHistory[key].Status === 'Rejected' ? 
+                    <>
+                      &nbsp;
+                      <img
+                        src="/assets/windows-11-emojis/no-entry_26d4.png"
+                        alt=" ⛔"
+                        style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                      />
+                    </>
+                    : 
+                    <>
+                      &nbsp;
+                      <img
+                        src="/assets/windows-11-emojis/check-mark-button_2705.png"
+                        alt=" ✅"
+                        style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                      />
+                    </>}
                   </Typography>
                 </Stack>
-                { purchaseHistory[key].Status === 'Rejected' &&
                   <Stack
                     spacing={0.5}
                     direction="row"
                   >
                     <SubdirectoryArrowRightIcon />
-                    <Typography sx={{fontFamily: 'PlaypenSans'}}>Rejection reason: {purchaseHistory[key].RejectionReason}</Typography> 
+                    <Typography sx={{fontFamily: 'PlaypenSans'}}>Rejection reason: {purchaseHistory[key].AdditionalInfo}</Typography> 
                   </Stack>
-                }
               </Stack> 
             </Paper>
           ))}

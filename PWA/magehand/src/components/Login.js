@@ -74,7 +74,14 @@ function Login() {
             flexDirection="column" 
           >
             <Box margin={20}>
-                <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Login 🔓</Typography>
+              <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+                Login&nbsp; 
+                  <img
+                  src="/assets/windows-11-emojis/unlocked_1f513.png"
+                  alt="🔓"
+                  style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                  />
+              </Typography>
             </Box>
             <TextField
                 label="Email"

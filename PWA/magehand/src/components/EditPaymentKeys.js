@@ -133,7 +133,14 @@ function EditPaymentKeys() {
             display="flex" 
             flexDirection="column" 
         >
-          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>Edit Payment Key 🗝️</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+            Edit Payment Key&nbsp; 
+            <img
+              src="/assets/windows-11-emojis/old-key_1f5dd-fe0f.png"
+              alt="🗝️"
+              style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+            />
+          </Typography>
           {!loading && <>
             <TextField
             label="Access Token"
@@ -185,7 +192,14 @@ function EditPaymentKeys() {
             </Button>
             {showInstructions && (
                 <Stack mt={2} spacing={1} >
-                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}>Don't have the Mercado Pago token yet? 👇</Typography>
+                  <Typography variant="h5" sx={{fontFamily: 'PlaypenSans'}}>
+                    Don't have the Mercado Pago token yet?&nbsp;
+                    <img
+                      src="/assets/windows-11-emojis/backhand-index-pointing-down_1f447.png"
+                      alt="👇"
+                      style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+                    />
+                  </Typography>
                   <Typography variant="h7" sx={{fontFamily: 'PlaypenSans'}}>
                     1: Enter the&nbsp;
                     <Link href="https://mercadopago.com.br/developers/panel/app">

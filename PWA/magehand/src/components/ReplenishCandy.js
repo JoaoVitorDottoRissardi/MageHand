@@ -17,8 +17,8 @@ function ReplenishCandy() {
 
   const maxVolume = 3000.0;
 
-  const [addCandy1Volume, setaddCandy1Volume] = useState(null);
-  const [addCandy2Volume, setaddCandy2Volume] = useState(null);
+  const [addCandy1Volume, setaddCandy1Volume] = useState(0);
+  const [addCandy2Volume, setaddCandy2Volume] = useState(0);
   const [candy1Volume, setCandy1Volume] = useState(0);
   const [candy2Volume, setCandy2Volume] = useState(0);
   const [candy1Name, setCandy1Name] = useState(null);
@@ -122,7 +122,14 @@ function ReplenishCandy() {
             display="flex" 
             flexDirection="column" 
         >
-          <Typography variant="h4" style={{fontFamily: 'AbrilFatface', marginBottom: '2%'}}>Replenish Candy 📦</Typography>
+          <Typography variant="h4" style={{fontFamily: 'AbrilFatface'}}>
+            Replenish Candy&nbsp; 
+            <img
+            src="/assets/windows-11-emojis/package_1f4e6.png"
+            alt="📦"
+            style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+            />
+          </Typography>
           {!loading && <>
             <Paper
               elevation={3} 
@@ -134,12 +141,25 @@ function ReplenishCandy() {
                 paddingBottom: '3%'
               }}
             >
-              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}><u>Candy #1:</u> {candy1Name} 👇</Typography>
+              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>
+                <u>Candy #1:</u> {candy1Name}
+                <img
+                  src="/assets/windows-11-emojis/backhand-index-pointing-down_1f447.png"
+                  alt="👇"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
+                />
+              </Typography>
               <Divider style={{marginTop: '3%', marginBottom: '3%'}}/>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
                 Current volume: {candy1Volume ? candy1Volume : 0} ml
               </Typography>
-              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>➕</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                <img
+                  src="/assets/windows-11-emojis/plus_2795.png"
+                  alt="➕"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
+                />
+              </Typography>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy1Volume} ml</Typography>
               <Slider 
                 defaultValue={0} 
@@ -150,7 +170,13 @@ function ReplenishCandy() {
                 min={0} 
                 max={maxVolume - candy1Volume}
               />
-              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>🟰</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                <img
+                  src="/assets/windows-11-emojis/heavy-equals-sign_1f7f0.png"
+                  alt="🟰"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'top' }}
+                />
+              </Typography>
               <Stack
                 spacing={2}
                 direction="row"
@@ -159,7 +185,14 @@ function ReplenishCandy() {
                   New Volume: {addCandy1Volume ? parseFloat(candy1Volume) + parseFloat(addCandy1Volume) : parseFloat(candy1Volume)} ml       
                 </Typography>
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
-                  {parseFloat(candy1Volume) + parseFloat(addCandy1Volume) === maxVolume ? ' ⚠️Full!' : ''}
+                  {parseFloat(candy1Volume) + parseFloat(addCandy1Volume) === maxVolume ? <>  
+                  Full!
+                  <img
+                    src="/assets/windows-11-emojis/warning_26a0-fe0f.png"
+                    alt="⚠️"
+                    style={{ width: '0.8em', height: '0.8em', verticalAlign: 'middle' }}
+                  />
+                  </> : ''}
                 </Typography>
               </Stack>
 
@@ -174,12 +207,25 @@ function ReplenishCandy() {
                 paddingBottom: '3%'
               }}
             >
-              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}><u>Candy #2:</u> {candy2Name} 👇</Typography>
+              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>
+                <u>Candy #2:</u> {candy2Name}
+                <img
+                  src="/assets/windows-11-emojis/backhand-index-pointing-down_1f447.png"
+                  alt="👇"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
+                />
+              </Typography>
               <Divider style={{marginTop: '3%', marginBottom: '3%'}}/>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
                 Current volume: {candy2Volume ? candy2Volume : 0} ml
               </Typography>
-              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>➕</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                <img
+                  src="/assets/windows-11-emojis/plus_2795.png"
+                  alt="➕"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
+                />
+              </Typography>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy2Volume} ml</Typography>
               <Slider 
                 defaultValue={0} 
@@ -190,7 +236,13 @@ function ReplenishCandy() {
                 min={0} 
                 max={maxVolume - candy2Volume}
               />
-              <Typography variant="h5" style={{fontFamily: 'PlaypenSans'}}>🟰</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
+                <img
+                  src="/assets/windows-11-emojis/heavy-equals-sign_1f7f0.png"
+                  alt="🟰"
+                  style={{ width: '1em', height: '1em', verticalAlign: 'top' }}
+                />
+              </Typography>
               <Stack
                 spacing={2}
                 direction="row"
@@ -199,7 +251,15 @@ function ReplenishCandy() {
                   New Volume: {addCandy2Volume ? parseFloat(candy2Volume) + parseFloat(addCandy2Volume) : parseFloat(candy2Volume)} ml       
                 </Typography>
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
-                  {parseFloat(candy2Volume) + parseFloat(addCandy2Volume) === maxVolume ? ' ⚠️Full!' : ''}
+                  {parseFloat(candy2Volume) + parseFloat(addCandy2Volume) === maxVolume ? 
+                  <>  
+                  Full!
+                  <img
+                    src="/assets/windows-11-emojis/warning_26a0-fe0f.png"
+                    alt="⚠️"
+                    style={{ width: '0.8em', height: '0.8em', verticalAlign: 'middle' }}
+                  />
+                  </> : ''}
                 </Typography>
               </Stack>
             </Paper>
