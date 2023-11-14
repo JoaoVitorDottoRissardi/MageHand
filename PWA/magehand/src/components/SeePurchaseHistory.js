@@ -61,7 +61,6 @@ function SeePurchaseHistory() {
       
     get(child(dbRef, uid + '/OrderHistory/' + date.format('YYYY-MM-DD'))).then( (snapshot) => {
       if(snapshot.exists()){
-        console.log(snapshot.val());
         setPurchaseHistory(snapshot.val());  
         setNoOrders(false);
         // setCandy1Volume(snapshot.val().Candy1.Volume);

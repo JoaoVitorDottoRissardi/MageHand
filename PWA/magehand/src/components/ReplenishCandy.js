@@ -52,7 +52,6 @@ function ReplenishCandy() {
       
     get(child(dbRef, uid + '/candyInformation')).then( (snapshot) => {
       if(snapshot.exists()){
-        console.log(snapshot.val());
         setCandy1Volume(snapshot.val().Candy1.Volume);
         setCandy2Volume(snapshot.val().Candy2.Volume);
         setCandy1Name(snapshot.val().Candy1.Name);

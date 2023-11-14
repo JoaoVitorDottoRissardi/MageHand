@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getMessaging, getToken, onMessage } from "firebase/messaging";
+import { getMessaging, getToken } from "firebase/messaging";
 
 
 const firebaseConfig = {
@@ -15,30 +15,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const messaging = getMessaging(app);
 
-export const getTken = (setTokenFound) => {
+export const getTken = () => {
   return getToken(messaging, {vapidKey: 'BFtz_VKNIQIE4AEGu4FDPFNycZJlJhFSYhwzgTd5m1pBdCEJfGv2KedI6GySvxDj6MPGDMoRzQa2LahabnRhZNI'}).then((currentToken) => {
     if (currentToken) {
-      setTokenFound(true);
       return currentToken;
-      // Track the token -> client mapping, by sending to backend server
-      // show on the UI that permission is secured
     } else {
       console.log('No registration token available. Request permission to generate one.');
-      setTokenFound(false);
-      // shows on the UI that permission is required 
+      return null;
     }
   }).catch((err) => {
     console.log('An error occurred while retrieving token. ', err);
-    // catch error while creating client token
+    return null;
   });
 }
-
-// export const onMessageListener = () =>
-//   new Promise((resolve) => {
-//     onMessage(messaging, (payload) => {
-//       resolve(payload);
-//     });
-// });
 
 const authErrorCodes = {
   'auth/email-already-in-use' : "Error: email already in use!",
@@ -49,6 +38,7 @@ const authErrorCodes = {
   'auth/missing-password': 'Error: missing password!',
   'auth/too-many-requests': 'Error: too many requests, login temporarily blocked!',
   'auth/requires-recent-login': 'Error: login timeout. Redirecting to login page!',
+  'auth/network-request-failed': 'Error: no internet connection!',
 }
 
 const storageErrorCodes = {

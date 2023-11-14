@@ -80,8 +80,6 @@ function EditCandy() {
 
   useEffect(() => {
 
-    console.log('oi');
-
     if(auth.currentUser === null){
       setalertSeverity('error');
       setOpen(true);
@@ -143,7 +141,6 @@ function EditCandy() {
     fileInput.accept = 'image/*';
     fileInput.onchange = (e) => {
       const file = e.target.files[0];
-      console.log(file)
       if(file && (file.type.startsWith('image/png') || file.type.startsWith('image/jpg') || file.type.startsWith('image/jpeg'))){
         setCandy1({...candy1, file: file, url : URL.createObjectURL(file)});
       }

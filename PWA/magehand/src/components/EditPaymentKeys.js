@@ -53,7 +53,6 @@ function EditPaymentKeys() {
       
     get(child(dbRef, uid + '/PaymentKeys')).then( (snapshot) => {
       if(snapshot.exists()){
-        console.log(snapshot.val());
         setPaymentToken(snapshot.val().accessToken);
       }
       else {
@@ -68,7 +67,7 @@ function EditPaymentKeys() {
     }).finally(() => {
       setLoading(false);
     })
-  }, []);
+  }, [auth.currentUser, dbRef]);
 
   const toggleInstructions = () => {
     setShowInstructions(!showInstructions);

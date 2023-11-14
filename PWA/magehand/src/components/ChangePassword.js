@@ -36,7 +36,6 @@ function ChangePassword() {
     if(newPassword === confirmedPassword){
       updatePassword(auth.currentUser, newPassword)
         .then(() => {
-          console.log('Senha atualizada!');
           setSnackbarMessage('Password updated successfully!');
           setOpen(true);
           setUpdateSuccessful(true);

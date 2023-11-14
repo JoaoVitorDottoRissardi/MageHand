@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 // import { initializeApp } from 'firebase/app';
@@ -25,9 +25,6 @@ export function ErrorMessage({message}){
 }
 
 function App() {
-
-  const [show, setShow] = useState(false);
-  const [notification, setNotification] = useState({title: '', body: ''});
 
   onMessage(messaging, (payload) => {
     console.log(payload);

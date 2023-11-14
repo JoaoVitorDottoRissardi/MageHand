@@ -20,12 +20,10 @@ function Login() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const auth = getAuth(app);
 
-  const [isTokenFound, setTokenFound] = useState(false);
-
   const handleLogin = () => {
     signInWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
-        getTken(setTokenFound).then((token) => {
+        getTken().then((token) => {
           const dbRef = databaseRef(getDatabase(app));
           const updates = {};
           updates['/' + userCredential.user.uid + '/notificationToken'] = token;
@@ -36,7 +34,8 @@ function Login() {
           })
           navigate('/main');
         }).catch((error) => {
-          console.log(error);
+          setSnackbarMessage(error.code);
+          setOpen(true);
         });
       })
       .catch(error => {
