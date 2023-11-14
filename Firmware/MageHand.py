@@ -449,6 +449,17 @@ class MageHand:
         successEvent = threading.Event()
         failureEvent = threading.Event()
         amount = (self.cupPrice1[0]) + (self.cupPrice2[0])
+        if "--accept" in sys.argv:
+            self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
+            self.acceptCandies("Payment Successful")
+            sleep(2)
+            return "introduction"
+        elif "--reject" in sys.argv:
+            self.machine.showGestureMessage("Order was canceled", "Alert", [])
+            self.rejectCandies("Order was cancelled")
+            sleep(2)
+            return "introduction"
+
         if "--test" not in sys.argv:
             import pygame
             import base64
@@ -487,7 +498,7 @@ class MageHand:
                 return "introduction"
 
             def normal_callback(**kargs):
-                self.machine.showGestureMessage(f"QRcode for payment of R$ {round(0.12, 2):.2f}", "Confirm", ["ThumbsUp"], pos=(80, 24))
+                self.machine.showGestureMessage(f"QRcode for payment of R$ {round(amount, 2):.2f}", "Confirm", ["ThumbsUp"], pos=(80, 24))
                 self.machine.showImage(qrcode_img, make_surface=False, clear=False, pos=(120, 70))
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
                 
