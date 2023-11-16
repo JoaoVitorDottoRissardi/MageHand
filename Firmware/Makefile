@@ -1,4 +1,4 @@
-install: install-service install-python
+install: install-service install-python config set-var
 
 install-service:
 	install -v magehand.service /home/magehand/.config/systemd/user/
@@ -6,6 +6,7 @@ install-service:
 install-python:
 	install -v -d -m 0755 -o magehand -g users /usr/local/bin/Magehand
 	install -v -D -t /usr/local/bin/MageHand/ *.py
+	install -v -D -t /usr/local/bin/MageHand/ run.sh
 	cp -r pose /usr/local/bin/MageHand/
 	cp -r images /usr/local/bin/MageHand/
 
@@ -26,4 +27,3 @@ remote-all:
 
 run:
 	GPIOZERO_PIN_FACTORY=pigpio DISPLAY=:0.0 python MageHand.py
-	

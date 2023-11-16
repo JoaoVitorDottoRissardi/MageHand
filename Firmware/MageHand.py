@@ -66,6 +66,18 @@ phases: dict
     dictionary containing a mapping of strings to phase functions, so that phase transistions are not nested calls (see end of file)
 
 """
+import socket
+def is_connected():
+  try:
+    # See if we can resolve the host name - tells us if there is
+    # A DNS listening
+    # Connect to the host - tells us if the host is actually reachable
+    s = socket.create_connection(("one.one.one.one", 80), 2)
+    s.close()
+    return True
+  except Exception:
+     pass # We ignore any errors, returning False
+  return False
 
 class MageHand:
     functions_url = "https://us-central1-mage-hand-demo.cloudfunctions.net"
@@ -204,6 +216,10 @@ class MageHand:
         self.cupVolume2 = [0]
         self.cupPrice1 = [0]
         self.cupPrice2 = [0]
+
+        while not is_connected():
+            self.machine.showGestureMessage("No Internet Connection \n Please Wait", "Alert", [])
+            sleep(1)
 
         self.syncFirebase()
 
@@ -445,10 +461,25 @@ class MageHand:
     def paymentPhaseFunction(self):
         self.stateFile.write_text("payment")
 
+        while not is_connected():
+            self.machine.showGestureMessage("No Internet Connection \n Please Wait", "Alert", [])
+            sleep(1)
+
         self.machine.showGestureMessage("Generating payment, please wait", "Confirm", ["Peace"])
         successEvent = threading.Event()
         failureEvent = threading.Event()
         amount = (self.cupPrice1[0]) + (self.cupPrice2[0])
+        if "--accept" in sys.argv:
+            self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
+            self.acceptCandies("Payment Successful")
+            sleep(2)
+            return "introduction"
+        elif "--reject" in sys.argv:
+            self.machine.showGestureMessage("Order was canceled", "Alert", [])
+            self.rejectCandies("Order was cancelled")
+            sleep(2)
+            return "introduction"
+
         if "--test" not in sys.argv:
             import pygame
             import base64
@@ -487,7 +518,7 @@ class MageHand:
                 return "introduction"
 
             def normal_callback(**kargs):
-                self.machine.showGestureMessage(f"QRcode for payment of R$ {round(0.12, 2):.2f}", "Confirm", ["ThumbsUp"], pos=(80, 24))
+                self.machine.showGestureMessage(f"QRcode for payment of R$ {round(amount, 2):.2f}", "Confirm", ["ThumbsUp"], pos=(80, 24))
                 self.machine.showImage(qrcode_img, make_surface=False, clear=False, pos=(120, 70))
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
                 
