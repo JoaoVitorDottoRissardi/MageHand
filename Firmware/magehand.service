@@ -1,8 +1,10 @@
 [Unit]
 Description=Systemd service for starting the mage hand firmware
+Requires=pigpiod.target
+After=pigpiod.target
 
 [Service]
-ExecStart=/usr/local/bin/MageHand/MageHand.py
+ExecStart=/usr/local/bin/MageHand/run.sh
 
 [Install]
 WantedBy=graphical-session.target
