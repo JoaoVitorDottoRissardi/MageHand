@@ -217,6 +217,10 @@ class MageHand:
         self.cupPrice1 = [0]
         self.cupPrice2 = [0]
 
+        while not is_connected():
+            self.machine.showGestureMessage("No Internet Connection \n Please Wait", "Alert", [])
+            sleep(1)
+
         self.syncFirebase()
 
         if not self.paymentManager.hasPaymentKeys():
@@ -456,6 +460,10 @@ class MageHand:
     """
     def paymentPhaseFunction(self):
         self.stateFile.write_text("payment")
+
+        while not is_connected():
+            self.machine.showGestureMessage("No Internet Connection \n Please Wait", "Alert", [])
+            sleep(1)
 
         self.machine.showGestureMessage("Generating payment, please wait", "Confirm", ["Peace"])
         successEvent = threading.Event()
