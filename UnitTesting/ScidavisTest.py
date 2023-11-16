@@ -74,16 +74,20 @@ class Servo:
 		# self.servo.source_delay = (self.angleStep/self.speed)
 		# self.servo.source = quantized([currentAngle/90, angle/90], deltaAngle/self.angleStep)
 
+#motor = Motor(23, 16, 1)
 motor = Motor(14, 20, 1)
 
+#servo = Servo(2, 1, 30)
 servo = Servo(3, 1, 30)
 
+# servo.spinTo(-90)
+# sleep(2) 
 servo.spinTo(0) 
 
 print("Initiating tests!!!")
 input()
 
-timeToPour = 3
+timeToPour = 8
 
 tests = [1, 2, 3, 4, 5]
 
@@ -93,12 +97,12 @@ while timeToPour <= 10:
         sleep(timeToPour)
         motor.turnOff()
         print(f"Time: {timeToPour} ->  Sample {test}")
-        servo.spinTo(-60) 
-        for i in range(1, 31):
-            servo.spinTo(-60 - i)
-            sleep(1)
+        servo.spinTo(-45) 
+        for i in range(1, 46):
+            servo.spinTo(-45 - i)
+            sleep(0.05)
         input()
         servo.spinTo(0) 
         input()
 
-    timeToPour += 0.5
+    # timeToPour += 0.5

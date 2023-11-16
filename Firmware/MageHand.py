@@ -105,7 +105,7 @@ class MageHand:
 
 
         self.sync = threading.Event()
-        self.firebaseThread = threading.Thread(target=self.firebaseCallbackFunction)
+        self.firebaseThread = threading.Thread(target=self.firebaseCallbackFunction, daemon=True)
 
         self.dataDir = Path("/var/lib/MageHand")
         self.dataDir.mkdir(exist_ok=True)
@@ -617,4 +617,8 @@ if __name__ == '__main__':
         while True:
             p = mage.phases[p]()
     except KeyboardInterrupt:
-        requests.post(MageHand.functions_url + "/machine_is_offline", params={"uid": mage.user}, timeout=0)
+        print("Machine is Turning Off")
+        try:
+            requests.post(MageHand.functions_url + "/machine_is_offline", params={"uid": mage.user}, timeout=0.5)
+        except:
+            pass
