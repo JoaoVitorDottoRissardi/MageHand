@@ -29,7 +29,7 @@ function App() {
   onMessage(messaging, (payload) => {
     console.log(payload);
     console.log("Recebido!");
-    toast.warn(payload.notification.body, {
+    toast.warn(payload.notification.title, {
       position: "top-center",
       autoClose: 5000,
       hideProgressBar: false,
