@@ -9,15 +9,15 @@ Attributes
 ----------
 
 pin: int
-    in which pin of the raspberry the motor transistor will be connected.
-    This pin follows the BCM pattern. Therefore, it is always the GPIO number, 
-    not the raspberry pin number.
+	in which pin of the raspberry the motor transistor will be connected.
+	This pin follows the BCM pattern. Therefore, it is always the GPIO number, 
+	not the raspberry pin number.
 
 angleStep: float
 	the step with which the motor should spin, in degrees.
 
 speed: float
-    speed of the motor, in degrees per second.
+	speed of the motor, in degrees per second.
 
 servo: Servo
 	gpiozero class that represents a Servo
@@ -26,31 +26,34 @@ servo: Servo
 
 class Servo:
 
-	def __init__(self, pin, angleStep, speed):
+	def __init__(self, pin, angleStep, speed, offset=0):
 		self.pin = pin
 		self.angleStep = angleStep
 		self.speed = speed
+		self.offset = offset
 		myCorrection=0.45
 		maxPW=(2.0+myCorrection)/1000
 		minPW=(1.0-myCorrection)/1000
-		self.servo = AngularServo(pin=pin, min_angle=-90, max_angle=90, min_pulse_width=minPW, max_pulse_width=maxPW)
+		self.min = max(-90-self.offset, -90)
+		self.max = min(90-self.offset, 90)
+		self.servo = AngularServo(pin=pin, min_angle=-90-self.offset, max_angle=90-self.offset, min_pulse_width=minPW, max_pulse_width=maxPW)
 
 	"""
-        Function to spin the motor to a determined location
+		Function to spin the motor to a determined location
 
-        Parameters
-        ----------
-        angle : int
-             position to which the motor should spin to, in degrees. It must be a value between -90 and 90.
-        
-    """
+		Parameters
+		----------
+		angle : int
+			 position to which the motor should spin to, in degrees. It must be a value between -90 and 90.
+		
+	"""
 
 	def spinTo(self, angle):
 		currentAngle = self.servo.angle
 		direction = currentAngle - angle
-		print(currentAngle)
+		# print(currentAngle)
 		for i in range(int(currentAngle), angle, -1 if direction > 0 else 1):
-			self.servo.angle = i
+			self.servo.angle = (max(self.min, min(self.max, i)))
 			sleep(1/self.speed)
 		# self.servo.source_delay = (self.angleStep/self.speed)
 		# self.servo.source = quantized([currentAngle/90, angle/90], deltaAngle/self.angleStep)

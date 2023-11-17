@@ -65,13 +65,15 @@ class Machine:
         self.servo1 = Servo(
             servoParameters['1']['pin'],
             servoParameters['1']['angleStep'],
-            servoParameters['1']['speed']
+            servoParameters['1']['speed'],
+            servoParameters['1']['offset']
         )
 
         self.servo2 = Servo(
             servoParameters['2']['pin'],
             servoParameters['2']['angleStep'],
-            servoParameters['2']['speed']
+            servoParameters['2']['speed'],
+            servoParameters['2']['offset']
         )
 
         self.motor1 = Motor(
@@ -100,8 +102,12 @@ class Machine:
     """
 
     def acceptCandies(self):
-        self.servo1.spinTo(90)
-        self.servo2.spinTo(-90)
+        self.servo1.spinTo(45)
+        self.servo2.spinTo(-45)
+        for i in range(1, 46):
+            self.servo1.spinTo(45 + i)
+            self.servo2.spinTo(-45 - i)
+            sleep(0.05)
         sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)
@@ -112,8 +118,12 @@ class Machine:
     """
 
     def rejectCandies(self):
-        self.servo1.spinTo(-90)
-        self.servo2.spinTo(90)
+        self.servo1.spinTo(-45)
+        self.servo2.spinTo(45)
+        for i in range(1, 46):
+            self.servo1.spinTo(-45 - i)
+            self.servo2.spinTo(45 + i)
+            sleep(0.05)
         sleep(1)
         self.servo1.spinTo(0)
         self.servo2.spinTo(0)

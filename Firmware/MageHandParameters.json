@@ -92,12 +92,14 @@
       "1":{
          "pin":2,
          "angleStep":1,
-         "speed":40
+         "speed":40,
+         "offset":12
       },
       "2":{
          "pin":3,
          "angleStep":1,
-         "speed":40
+         "speed":40,
+         "offset":0
       }
    },
    "motorParameters":{

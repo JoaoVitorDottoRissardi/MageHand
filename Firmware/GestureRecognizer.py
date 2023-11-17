@@ -198,7 +198,7 @@ class GestureRecognizer:
             if score_label not in gestures_of_interest:
                 score_label = 'Undefined'
 
-            print(f"frame (t={timestamp}) -> gesture {score_label} (fps={1000000000 / (timestamp_ns - last_timestamp_ns)})")
+            # print(f"frame (t={timestamp}) -> gesture {score_label} (fps={1000000000 / (timestamp_ns - last_timestamp_ns)})")
 
             if in_confirmation == 'No':
                 if score_label != last_gesture:
@@ -259,8 +259,8 @@ class GestureRecognizer:
 
     def detect_abandoned_gesture(self, in_confirmation, detected_gestures):
         # change this if needed
-        max_frames_lost_in_row = 8
-        max_percent_lost_in_total = 0.3
+        max_frames_lost_in_row = 6
+        max_percent_lost_in_total = [0.3, 0.2, 0.15]
 
         lost = False
         lost_in_row = 0
@@ -278,7 +278,7 @@ class GestureRecognizer:
                 lost = False
                 lost_in_row = 0
 
-        if lost_in_total / len(detected_gestures) >= max_percent_lost_in_total:
+        if lost_in_total / len(detected_gestures) >= max_percent_lost_in_total[min(2, (len(detected_gestures)//6))]:
             return True
         
         # the confirmation can keep going

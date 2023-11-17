@@ -1,10 +1,12 @@
 [Unit]
 Description=Systemd service for starting the mage hand firmware
-Requires=pigpiod.target
-After=pigpiod.target
+Requires=pigpiod.service
+After=pigpiod.service
 
 [Service]
-ExecStart=/usr/local/bin/MageHand/run.sh
+User=magehand
+ExecStart=/home/magehand/MageHand/MageHand/Firmware/run.sh
+WorkingDirectory=/home/magehand/MageHand/MageHand/Firmware
 
 [Install]
-WantedBy=graphical-session.target
+WantedBy=multi-user.target

@@ -85,8 +85,8 @@ class MageHand:
     candy_1_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy1.jpg?alt=media"
     candy_2_storage_url = "https://firebasestorage.googleapis.com/v0/b/mage-hand-demo.appspot.com/o/kJyBx6wkKxblBQZn1Xc1BDLikH93%2FCandy2.jpg?alt=media"
     minVolume = 10
-    maxCupVolume = 100
-    volumePerTurn = 10
+    maxCupVolume = 200
+    volumePerSecond = 30
     name_conversion = {
         "ThumbsUp": "Thumbs Up",
         "ThumbsDown": "Thumbs Down",
@@ -100,6 +100,8 @@ class MageHand:
         params = json.loads(config)
 
         self.machine = Machine(params["displayParameters"], params["servoParameters"], params["motorParameters"])
+        self.machine.showGestureMessage('Initializing MageHand', 'Info', ["Peace"])
+
         self.gestureRecognizer = GestureRecognizer()
         self.paymentManager = PaymentManager()
 
@@ -113,11 +115,20 @@ class MageHand:
         self.storage1 = self.dataDir / "storage1.txt"
         self.storage2 = self.dataDir / "storage2.txt"
 
+        self.cupFile1 = self.dataDir / "cupFile1.txt"
+        self.cupFile2 = self.dataDir / "cupFile2.txt"
+
         if not self.storage1.exists():
             self.storage1.write_text("{:.2f}".format(0.0))
 
         if not self.storage2.exists():
             self.storage2.write_text("{:.2f}".format(0.0))
+
+        if not self.cupFile1.exists():
+            self.cupFile1.write_text("{:.2f}".format(0.0))
+
+        if not self.cupFile2.exists():
+            self.cupFile2.write_text("{:.2f}".format(0.0))
 
         if (self.dataDir / "candyInformation.json").exists():
             candyFile = (self.dataDir / "candyInformation.json").read_text()
@@ -134,8 +145,8 @@ class MageHand:
 
         self.selectedCandy = None
         self.stateFile = self.dataDir / "current_state.txt"
-        self.cupVolume1 = [0]
-        self.cupVolume2 = [0]
+        self.cupVolume1 = [float(self.cupFile1.read_text())]
+        self.cupVolume2 = [float(self.cupFile2.read_text())]
         self.cupPrice1 = [0]
         self.cupPrice2 = [0]
 
@@ -231,6 +242,8 @@ class MageHand:
         sleep(4)
 
         def none_callback(frame, **kargs):
+            import numpy as np
+            frame = np.rot90(frame)
             self.machine.showImage(frame)
             return 'introduction'
             
@@ -281,11 +294,11 @@ class MageHand:
     def selectionPhaseFunction(self):
         self.stateFile.write_text("selection")
         self.machine.showGestureMessage('Do a Stop gesture to \n start selecting candies', 'Info', ["Stop"])
-        sleep(5)
+        sleep(3)
 
         def undefined_callback(Xpositions, **kargs):
             mean = sum(Xpositions) / len(Xpositions)
-            print(f"Posicao detectada = {mean}")
+            # print(f"Posicao detectada = {mean}")
 
             self.selectedCandy = 1 if mean < 0.5 else 2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
@@ -358,8 +371,8 @@ class MageHand:
 
             self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]:.2f} of {self.maxCupVolume:.2f} mL\n Available: {c.volume:.2f} mL\n Cup price: R$ {cupPrice[0]:.2f} \n Show a Stop gesture to stop", ["Candy" + str(self.selectedCandy), "Stop"])
             self.machine.pourCandy(self.selectedCandy)
-            cup[0] += round(MageHand.volumePerTurn * delta_ms / 1000, 2)
-            c.volume -= round(MageHand.volumePerTurn * delta_ms / 1000, 2)
+            cup[0] += round(MageHand.volumePerSecond * delta_ms / 1000, 2)
+            c.volume -= round(MageHand.volumePerSecond * delta_ms / 1000, 2)
             cupPrice[0] = round(c.price * cup[0] / 8, 2)
             return "pouring"
 
@@ -373,6 +386,8 @@ class MageHand:
             self.machine.showGestureMessage(f"Stop detected\nhold it for 4 seconds\n Current total price: R$ {self.cupPrice1[0] + self.cupPrice2[0]:.2f}", "Confirm", ["Stop"])
             self.storage1.write_text("{:.2f}".format(self.candy1.volume))
             self.storage2.write_text("{:.2f}".format(self.candy2.volume))
+            self.cupFile1.write_text("{:.2f}".format(self.cupVolume1[0]))
+            self.cupFile2.write_text("{:.2f}".format(self.cupVolume2[0]))
             return "pouring"
         def none_callback(**kargs):
             self.machine.showGestureMessage("Lost track of hand", "Alert", [])
@@ -499,7 +514,7 @@ class MageHand:
         def thread1():
             while True:
                 status = self.paymentManager.checkPayment()
-                print(f"status checked: {status}")
+                # print(f"status checked: {status}")
                 if status == "cancelled":
                     failureEvent.set()
                     break
@@ -554,7 +569,7 @@ class MageHand:
         sleep(1)
         if not self.sync.is_set():
             return
-        self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information from database", "Alert", [])
+        self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information \n from database", "Alert", [])
         sleep(2)
         self.getFirebaseCandyInformation()
 
@@ -562,19 +577,19 @@ class MageHand:
         Function to set up firebase listener
     """
     def firebaseCallbackFunction(self):
-        response = requests.get(MageHand.firebase_url + self.user + "/.json", stream=True, headers={"Accept": "text/event-stream"})
+        response = requests.get(MageHand.firebase_url + self.user + "/candyInformation.json", stream=True, headers={"Accept": "text/event-stream"})
         client = sseclient.SSEClient(response)
-        print("Firebase notifications are now enabled")
+        # print("Firebase notifications are now enabled")
         for event in client.events():
-            print(f"Received event {event}")
-            print(event.event)
+            # print(f"Received event {event}")
+            # print(event.event)
             data = json.loads(event.data)
             if event.event == 'put' or event.event == "patch":
                 self.sync.set()
-            if event.event == 'put':
-                print(f"put: {data}")
-            elif event.event == "patch":
-                print(f"patch: {data}")
+            # if event.event == 'put':
+            #     print(f"put: {data}")
+            # elif event.event == "patch":
+            #     print(f"patch: {data}")
             requests.post(MageHand.functions_url + "/machine_is_online", params={"uid": self.user})
 
 
@@ -598,7 +613,7 @@ class MageHand:
         response = requests.get(MageHand.firebase_url + self.user + "/candyInformation.json")
         if response.status_code in [200, 201]:
             json_resp = response.json()
-            print(json_resp)
+            # print(json_resp)
             c1 = json_resp["Candy1"]
             c2 = json_resp["Candy2"]
             c1["Image"] = 'images/candy1.png'

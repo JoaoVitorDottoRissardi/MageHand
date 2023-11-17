@@ -1,6 +1,7 @@
 install: install-service install-python config set-var
 
 install-service:
+	mkdir -p /home/magehand/.config/systemd/user/
 	install -v magehand.service /home/magehand/.config/systemd/user/
 
 install-python:
