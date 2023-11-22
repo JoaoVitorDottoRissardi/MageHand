@@ -8,6 +8,7 @@ import { getDatabase, ref, get, child, update} from "firebase/database";
 import CheckIcon from '@mui/icons-material/Check';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CircularProgress from '@mui/material/CircularProgress';
+import ThumbsUpAltIcon from '@mui/icons-material/ThumbUpAlt';
 import '../assets/CustomFonts.css'
 
 function ReplenishCandy() {
@@ -23,11 +24,14 @@ function ReplenishCandy() {
   const [candy2Volume, setCandy2Volume] = useState(0);
   const [candy1Name, setCandy1Name] = useState(null);
   const [candy2Name, setCandy2Name] = useState(null);
+  const [replenish1, setReplenish1] = useState(null);
+  const [replenish2, setReplenish2] = useState(null);
   const [open, setOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [loginTimeout, setLoginTimeout] = useState(false);
   const [updateSuccessful, setUpdateSuccessful] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [warningMessage, setWarningMessage] = useState(null);
 
   useEffect(() => {
     if (loginTimeout) {
@@ -52,10 +56,16 @@ function ReplenishCandy() {
       
     get(child(dbRef, uid + '/candyInformation')).then( (snapshot) => {
       if(snapshot.exists()){
-        setCandy1Volume(snapshot.val().Candy1.Volume);
-        setCandy2Volume(snapshot.val().Candy2.Volume);
+        setCandy1Volume(snapshot.val().Candy1.Volume + snapshot.val().Candy1.Replenish);
+        setCandy2Volume(snapshot.val().Candy2.Volume + snapshot.val().Candy2.Replenish);
+        setReplenish1(snapshot.val().Candy1.Replenish);
+        setReplenish2(snapshot.val().Candy2.Replenish);
         setCandy1Name(snapshot.val().Candy1.Name);
         setCandy2Name(snapshot.val().Candy2.Name);
+        if(snapshot.val().Candy1.Volume + snapshot.val().Candy1.Replenish === 0  || 
+          snapshot.val().Candy2.Volume + snapshot.val().Candy2.Replenish === 0){
+          setWarningMessage(true);
+        }
       }
       else {
         setUpdateSuccessful(false);
@@ -83,8 +93,8 @@ function ReplenishCandy() {
     const uid = auth.currentUser.uid;
   
     const updates = {};
-    updates['/' + uid + '/candyInformation/Candy1/Replenish'] = addCandy1Volume;
-    updates['/' + uid + '/candyInformation/Candy2/Replenish'] = addCandy2Volume;
+    updates['/' + uid + '/candyInformation/Candy1/Replenish'] = replenish1 + addCandy1Volume;
+    updates['/' + uid + '/candyInformation/Candy2/Replenish'] = replenish2 + addCandy2Volume;
 
     setCandy1Volume(candy1Volume + addCandy1Volume);
     setCandy2Volume(candy2Volume + addCandy2Volume);
@@ -129,7 +139,7 @@ function ReplenishCandy() {
             style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
             />
           </Typography>
-          {!loading && <>
+          {!loading && !warningMessage &&<>
             <Paper
               elevation={3} 
               style={{ 
@@ -159,7 +169,7 @@ function ReplenishCandy() {
                   style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
                 />
               </Typography>
-              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy1Volume} ml</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add(mL): {addCandy1Volume} ml</Typography>
               <Slider 
                 defaultValue={0} 
                 aria-label="Default" 
@@ -225,7 +235,7 @@ function ReplenishCandy() {
                   style={{ width: '1em', height: '1em', verticalAlign: 'middle' }}
                 />
               </Typography>
-              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add (mL): {addCandy2Volume} ml</Typography>
+              <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>Volume to add(mL): {addCandy2Volume} ml</Typography>
               <Slider 
                 defaultValue={0} 
                 aria-label="Default" 
@@ -262,27 +272,64 @@ function ReplenishCandy() {
                 </Typography>
               </Stack>
             </Paper>
-              <Button 
-                variant="contained" 
-                fullWidth
-                sx={{fontFamily: 'PlaypenSans'}}  
-                onClick={saveReplenishCandy} 
-                endIcon={<CheckIcon />}
-              >
-                  Replenish Candy
-              </Button>
-              <Button 
-                variant="contained"
-                fullWidth 
-                onClick={() => navigate('/main') }
-                sx={{fontFamily: 'PlaypenSans'}}  
-                endIcon={<ArrowBackIcon />}
-              >
-                  Back
-              </Button>
-              {loginTimeout && <CircularProgress />}
+            <Button 
+              variant="contained" 
+              fullWidth
+              sx={{fontFamily: 'PlaypenSans'}}  
+              onClick={saveReplenishCandy} 
+              endIcon={<CheckIcon />}
+            >
+                Replenish Candy
+            </Button>
+            <Button 
+              variant="contained"
+              fullWidth 
+              onClick={() => navigate('/main') }
+              sx={{fontFamily: 'PlaypenSans'}}  
+              endIcon={<ArrowBackIcon />}
+            >
+                Back
+            </Button>
+            {loginTimeout && <CircularProgress />}
             </>}
             {loading && <CircularProgress />}
+            {!loading && warningMessage && 
+                <>
+                  <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
+                    Warning!
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    One of your storages is empty!
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    You need to fill the mechanisms. 
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    To do so, you just need to make an order.
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    Make sure to at least pour some candy.
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    Reject the order at the end.
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    Put the candy back at the storage.
+                  </Typography>
+                  <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+                    Then, the volume will be correct!
+                  </Typography>
+                  <Button 
+                    variant="contained"
+                    fullWidth 
+                    onClick={() => setWarningMessage(false) }
+                    sx={{fontFamily: 'PlaypenSans'}}  
+                    endIcon={<ThumbsUpAltIcon />}
+                  >
+                      OK
+                  </Button>
+                </>
+              }
         </Stack>
         <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
         <Alert onClose={handleClose} severity={updateSuccessful ? 'success' : "error"} sx={{ width: '100%' }}>

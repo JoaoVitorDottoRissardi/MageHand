@@ -38,6 +38,9 @@ function SeePurchaseHistory() {
 
   const [loading, setLoading] = useState(true);
 
+  const[totalQuantity1, setTotalQuantity1] = useState(0);
+  const[totalQuantity2, setTotalQuantity2] = useState(0);
+
   useEffect(() => {
     if (loginTimeout) {
       const timeout = setTimeout(() => {
@@ -61,6 +64,14 @@ function SeePurchaseHistory() {
       
     get(child(dbRef, uid + '/OrderHistory/' + date.format('YYYY-MM-DD'))).then( (snapshot) => {
       if(snapshot.exists()){
+        setTotalQuantity1(Object.values(snapshot.val())
+          .filter(item => item.Status === 'Rejected')
+          .reduce((acc, item) => acc + item['Quantity1'], 0)
+        );
+        setTotalQuantity2(Object.values(snapshot.val())
+          .filter(item => item.Status === 'Rejected')
+          .reduce((acc, item) => acc + item['Quantity2'], 0)
+        );
         setPurchaseHistory(snapshot.val());  
         setNoOrders(false);
         // setCandy1Volume(snapshot.val().Candy1.Volume);
@@ -119,9 +130,25 @@ function SeePurchaseHistory() {
               />
             </DemoContainer>
           </LocalizationProvider>
+          <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+            <img
+              src="/assets/windows-11-emojis/backhand-index-pointing-right_1f449.png"
+              alt="👉"
+              style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+            />
+            &nbsp;Total rejected Candy 1: {totalQuantity1.toFixed(2)} ml
+          </Typography>
+          <Typography variant="h7" style={{fontFamily: 'PlaypenSans'}}>
+          <img
+            src="/assets/windows-11-emojis/backhand-index-pointing-right_1f449.png"
+            alt="👉"
+            style={{ width: '1.4em', height: '1.4em', verticalAlign: 'top' }}
+          />
+            &nbsp;Total rejected Candy 2: {totalQuantity2.toFixed(2)} ml
+          </Typography>
           {noOrders && <Typography variant="h5" style={{fontFamily: 'PlaypenSans', color: 'grey'}}>No Orders found for this date!</Typography>}
           <div className="scrollable-container" style={{maxHeight: 'calc(100vh - 300px)', overflowY: 'auto', paddingLeft: '5%', minWidth: '350px'}}>
-          {Object.keys(purchaseHistory).map((key, index) => (
+          {Object.keys(purchaseHistory).reverse().map((key, index) => (
             <Paper 
               key={index} 
               elevation={3} 

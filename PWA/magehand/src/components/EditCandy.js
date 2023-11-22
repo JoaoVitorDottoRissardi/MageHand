@@ -415,7 +415,7 @@ function EditCandy() {
                     onChange={(e) => {
                       const inputValue = e.target.value;
                       if (/^\$?(([1-9](\d*|\d{0,2}(,\d{3})*))|0)(\.\d{1,2})?$/.test(inputValue) || inputValue === "") {
-                        setCandy1({ ...candy1, price: inputValue });
+                        setCandy2({ ...candy2, price: inputValue });
                       }
                     }}
                     disabled={!editingCandy2}
