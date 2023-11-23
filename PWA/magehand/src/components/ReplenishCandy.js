@@ -16,7 +16,7 @@ function ReplenishCandy() {
   const auth = getAuth(app);
   const dbRef = ref(getDatabase(app));
 
-  const maxVolume = 3000.0;
+  const maxVolume = 4000.0;
 
   const [addCandy1Volume, setaddCandy1Volume] = useState(0);
   const [addCandy2Volume, setaddCandy2Volume] = useState(0);
