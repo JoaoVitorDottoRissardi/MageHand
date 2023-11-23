@@ -16,6 +16,11 @@
             255,
             0
          ],
+         "Warning":[
+            237,
+            158,
+            21
+         ],
          "Text":[
             0,
             0,
@@ -51,6 +56,10 @@
             "path":"./images/info.png"
          },
          "Alert":{
+            "type":"Icon",
+            "path":"./images/alert.png"
+         },
+         "Warning":{
             "type":"Icon",
             "path":"./images/alert.png"
          },
