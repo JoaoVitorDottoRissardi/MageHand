@@ -94,6 +94,13 @@ class MageHand:
         "Fist": "Fist",
         "Stop": "Stop"
     }
+    action_conversion = {
+        "ThumbsUp": "accept the order",
+        "ThumbsDown": "reject the order",
+        "Peace": "buy more candy",
+        "Fist": "",
+        "Stop": ""
+    }
     def __init__(self):
         self.user = "kJyBx6wkKxblBQZn1Xc1BDLikH93"
         config = (Path.home() / ".config/MageHand/MageHandParameters.json").read_text()
@@ -207,7 +214,8 @@ class MageHand:
     def bootPhaseFunction(self):
         lastPhase = self.stateFile.read_text() if self.stateFile.exists() else ""
 
-        self.syncFirebase()
+        self.syncFirebase(ignore=True)
+        self.machine.showGestureMessage('Initializing MageHand', 'Info', ["Peace"])
         self.firebaseThread.start()
 
         if lastPhase == "payment":
@@ -232,11 +240,12 @@ class MageHand:
             self.machine.showGestureMessage("No Internet Connection \n Please Wait", "Alert", [])
             sleep(1)
 
-        self.syncFirebase()
+        self.syncFirebase(ignore=True)
 
         if not self.paymentManager.hasPaymentKeys():
             self.machine.showGestureMessage('There are no payment keys configured \n Cannot proceed', 'Alert', [])
-            self.getFirebasePaymentKeys()
+        
+        self.getFirebasePaymentKeys()
 
         self.machine.showGestureMessage('Make a Stop sign to proceed', 'Info', ['Stop'])
         sleep(4)
@@ -281,11 +290,11 @@ class MageHand:
             return "confirmation"
         
         def none_callback(**kargs):
-            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
+            self.machine.showGestureMessage("Lost track of hand \n Show a Thumbs Up to Select Candy", "Alert", ["ThumbsUp"])
             return "confirmation"
 
         self.machine.showGestureMessage('Customer Detected \n Do a Thumbs Up to Buy Candy', 'Info', ["ThumbsUp"])
-        return self.gestureRecognizer.runState("confirmation", ["ThumbsUp", "None"], {"Undefined": undefined_callback, "None": none_callback, "ThumbsUp": lambda **kargs: "selection"}
+        return self.gestureRecognizer.runState("confirmation", ["ThumbsUp", "None", "Undefined"], {"Undefined": undefined_callback, "None": none_callback, "ThumbsUp": lambda **kargs: "selection"}
                                         , ["None"],{"None": lambda **kargs: "introduction"})
 
     """
@@ -302,26 +311,33 @@ class MageHand:
 
             self.selectedCandy = 1 if mean < 0.5 else 2
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
+            cupPrice = self.cupPrice1 if self.selectedCandy == 1 else self.cupPrice2
             side = 'left' if self.selectedCandy == 1 else 'right'
 
             if c.volume > MageHand.minVolume:
-                self.machine.showSelectionMessage(f'{c.name} selected \n Move {side} to select other candy \n Do a Peace Gesture to confirm', "Candy" + str(self.selectedCandy), ['Peace'])
+                self.machine.showSelectionMessage(f'{c.name} selected ({100*cupPrice[0]:.2f} / 100 mL) \n Move {side} to select other candy \n There is {c.volume:.2f} mL of this candy left \n Do a Peace Gesture to confirm', "Candy" + str(self.selectedCandy), ['Peace'])
             else:
-                self.machine.showGestureMessage(f"There is no {c.name} left,\n please choose another type", "Alert", [])
+                self.machine.showGestureMessage(f"There is no {c.name} left,\n please choose another candy", "Warning", [])
             return "selection"
 
-        def peace_callback(**kargs):
-            self.machine.showGestureMessage("Peace detected\nhold for 4 seconds", "Confirm", ["Peace"])
+        def peace_callback(Xpositions, **kargs):
+            if self.selectedCandy == None:
+                mean = sum(Xpositions) / len(Xpositions)
+                self.selectedCandy = 1 if mean < 0.5 else 2
+
+            c = self.candy1 if self.selectedCandy == 1 else self.candy2
+            self.machine.showGestureMessage(f"Peace detected \n hold for 4 seconds to \n buy {c.name}", "Confirm", ["Candy" + str(self.selectedCandy), "Peace"])
             return "selection"
         def thumbsDown_callback(**kargs):
-            self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds", "Confirm", ["ThumbsDown"])
+            self.machine.showGestureMessage("Thumbs Down detected \n hold for 4 seconds to \n cancel the order", "Confirm", ["ThumbsDown"])
             return "selection"
         def none_callback(**kargs):
-            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
+            self.machine.showGestureMessage("Lost track of hand \n Select a candy with a Stop gesture \n to continue", "Alert", ["Stop"])
             return "selection"
 
         peace_confirmationCallback = lambda **kargs: "pouring"
         def thumbsDown_None_confirmationCallback(**kargs):
+            self.machine.showGestureMessage("Rejecting candies and returning \n to introduction", "Alert", [])
             self.rejectCandies("Lost track of user")
             return "introduction"
 
@@ -351,7 +367,7 @@ class MageHand:
 
         def thumbsDown_callback(**kargs):
             self.machine.stopPouringCandy(self.selectedCandy)
-            self.machine.showGestureMessage("Thumbs Down detected \n hold it for 4 seconds", "Confirm", ["ThumbsDown"])
+            self.machine.showGestureMessage("Thumbs Down detected \n hold it for 4 seconds to \n cancel the order", "Confirm", ["ThumbsDown"])
             return "pouring"
 
         def fist_callback(delta_ms, **kargs):
@@ -360,13 +376,13 @@ class MageHand:
             c = self.candy1 if self.selectedCandy == 1 else self.candy2
 
             if cup[0] > self.maxCupVolume:
-                self.machine.showGestureMessage("The cup will overflow", "Alert", [])
                 self.machine.stopPouringCandy(self.selectedCandy)
+                self.machine.showGestureMessage("Stopped pouring candy \n The cup is full \n Show a Stop gesture to continue", "Warning", ["Stop"])
                 return "pouring"
 
             if c.volume < MageHand.minVolume:
-                self.machine.showGestureMessage("Storage is below critical volume. \n Please show a Stop gesture", "Info", ["Stop"])
                 self.machine.stopPouringCandy(self.selectedCandy)
+                self.machine.showGestureMessage("Stopped pouring candy \n Storage is below critical volume. \n Show a Stop gesture to continue", "Warning", ["Stop"])
                 return "pouring"
 
             self.machine.showBuyingMessage(f"Cup Capacity: {cup[0]:.2f} of {self.maxCupVolume:.2f} mL\n Available: {c.volume:.2f} mL\n Cup price: R$ {cupPrice[0]:.2f} \n Show a Stop gesture to stop", ["Candy" + str(self.selectedCandy), "Stop"])
@@ -378,6 +394,9 @@ class MageHand:
 
 
         def undefined_callback(**kargs):
+            cup = self.cupVolume1 if self.selectedCandy == 1 else self.cupVolume2
+            cupPrice = self.cupPrice1 if self.selectedCandy == 1 else self.cupPrice2
+            self.machine.showGestureMessage(f"Cup with {cup[0]:.2f} of {self.maxCupVolume:.2f} mL (R$ {cupPrice[0]:.2f})\n Show a Fist to pour more \n Show a Stop to stop", "Info", ["Fist", "Stop"])
             self.machine.stopPouringCandy(self.selectedCandy)
             return "pouring"
 
@@ -390,14 +409,18 @@ class MageHand:
             self.cupFile2.write_text("{:.2f}".format(self.cupVolume2[0]))
             return "pouring"
         def none_callback(**kargs):
-            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
+            cup = self.cupVolume1 if self.selectedCandy == 1 else self.cupVolume2
+            cupPrice = self.cupPrice1 if self.selectedCandy == 1 else self.cupPrice2
+            self.machine.showGestureMessage(f"Lost track of hand \n Show your hand to continue \n Cup with {cup[0]:.2f} of {self.maxCupVolume:.2f} mL (R$ {cupPrice[0]:.2f})", "Alert", ["Peace"])
             return "pouring"
 
         def thumbsDown_confirmationCallback(**kargs):
+            self.machine.showGestureMessage("Rejecting candies and returning \n to introduction", "Alert", [])
             self.rejectCandies("Order was cancelled in Pouring phase")
             return "introduction"
         stop_confirmationCallback = lambda **kargs: "decision"
         def none_confirmationCallback(**kargs):
+            self.machine.showGestureMessage("Rejecting candies and returning \n to introduction", "Alert", [])
             self.rejectCandies("Lost track of customer in Pouring phase")
             return "introduction"
 
@@ -433,15 +456,16 @@ class MageHand:
 
         def general_callback(gesture):
             def callback(**kargs):
-                self.machine.showGestureMessage(f"Hold the {MageHand.name_conversion[gesture]} gesture\n for 4 seconds", "Confirm", [gesture])
+                self.machine.showGestureMessage(f"Hold the {MageHand.name_conversion[gesture]} gesture\n for 4 seconds to {MageHand.action_conversion[gesture]} \n Current total price: R$ {self.cupPrice1[0] + self.cupPrice2[0]:.2f}", "Confirm", [gesture])
                 return "decision"
             return callback
 
         def none_callback(**kargs):
-            self.machine.showGestureMessage("Lost track of hand", "Alert", [])
+            self.machine.showGestureMessage(f"Lost track of hand \n Show your hand to continue \n Current total price: R$ {self.cupPrice1[0] + self.cupPrice2[0]:.2f}", "Alert", ["Stop"])
             return "decision"
 
         def thumbsDown_confirmationCallback(**kargs):
+            self.machine.showGestureMessage("Rejecting candies and returning \n to introduction", "Alert", [])
             self.rejectCandies("Order was cancelled in decision phase")
             return "introduction"
 
@@ -449,11 +473,12 @@ class MageHand:
         peace_confirmationCallback = lambda **kargs: "selection"
 
         def none_confirmationCallback(**kargs):
+            self.machine.showGestureMessage("Rejecting candies and returning \n to introduction", "Alert", [])
             self.rejectCandies("Lost track of customer in decision phase")
             return "introduction"
 
         return self.gestureRecognizer.runState("decision",
-                                               ["ThumbsDown", "ThumbsUp", "Peace", "None"],
+                                               ["ThumbsDown", "ThumbsUp", "Peace", "None", "Undefined"],
                                                {"ThumbsDown": general_callback("ThumbsDown"),
                                                 "ThumbsUp": general_callback("ThumbsUp"),
                                                 "Peace": general_callback("Peace"),
@@ -485,7 +510,7 @@ class MageHand:
         failureEvent = threading.Event()
         amount = (self.cupPrice1[0]) + (self.cupPrice2[0])
         if "--accept" in sys.argv:
-            self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
+            self.machine.showGestureMessage("Payment was accepted \n Please collect your candy", "Info", [])
             self.acceptCandies("Payment Successful")
             sleep(2)
             return "introduction"
@@ -529,6 +554,7 @@ class MageHand:
                 return "introduction" if successEvent.is_set() or failureEvent.is_set() else "payment"
 
             def thumbsDown_confirmationCallback(**kargs):
+                self.machine.showGestureMessage("Canceling order", "Alert", [])
                 self.paymentManager.cancelPayment()
                 return "introduction"
 
@@ -555,23 +581,23 @@ class MageHand:
             self.machine.showGestureMessage("Payment was accepted \n please collect your candy", "Info", [])
             self.acceptCandies("Payment Successful")
         else:
-            self.machine.showGestureMessage("Order was canceled", "Alert", [])
+            self.machine.showGestureMessage("Order was cancelled", "Alert", [])
             self.rejectCandies("Order was cancelled")
 
 
         return "introduction"
 
-    def syncFirebase(self):
-        if not self.sync.is_set():
+    def syncFirebase(self, ignore=False):
+        if (not ignore) and (not self.sync.is_set()):
             return
         self.sync.clear()
         self.machine.showGestureMessage("Syncing with remote database \n Please wait", "Info", [])
+        self.getFirebaseCandyInformation()
         sleep(1)
         if not self.sync.is_set():
             return
         self.machine.showGestureMessage("Inconsistency detected \n Retrieving updated information \n from database", "Alert", [])
         sleep(2)
-        self.getFirebaseCandyInformation()
 
     """
         Function to set up firebase listener

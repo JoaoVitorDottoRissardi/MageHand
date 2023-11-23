@@ -71,7 +71,7 @@ class PaymentManager:
                 },
                 "date_of_expiration": date_of_expiration
         }
-        print(f'"date_of_expiration": {date_of_expiration}')
+        # print(f'"date_of_expiration": {date_of_expiration}')
         response = requests.post(PaymentManager.api_url, data=json.dumps(data), headers=self.headers)
         if response.status_code in [201, 200]:
             json_resp = response.json()
