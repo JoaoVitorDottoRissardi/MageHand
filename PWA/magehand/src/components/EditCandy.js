@@ -212,6 +212,13 @@ function EditCandy() {
       return;
     }
 
+    if (candy1.price == 0.0 || candy2.price == 0.0){
+      setSnackbarMessage('Error: candy price cannot be zero!');
+      setalertSeverity('error');
+      setOpen(true);
+      return;
+    }
+
     const stRef1 = storageRef(getStorage(app), uid + '/Candy1.jpg');
     const stRef2 = storageRef(getStorage(app), uid + '/Candy2.jpg');
     
