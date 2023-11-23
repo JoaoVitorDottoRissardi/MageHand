@@ -160,7 +160,7 @@ function ReplenishCandy() {
               </Typography>
               <Divider style={{marginTop: '3%', marginBottom: '3%'}}/>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-                Current volume: {candy1Volume ? candy1Volume : 0} ml
+                Current volume: {candy1Volume ? candy1Volume.toFixed(2) : 0} ml
               </Typography>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
                 <img
@@ -191,7 +191,7 @@ function ReplenishCandy() {
                 direction="row"
               >
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-                  New Volume: {addCandy1Volume ? parseFloat(candy1Volume) + parseFloat(addCandy1Volume) : parseFloat(candy1Volume)} ml       
+                  New Volume: {addCandy1Volume ? (parseFloat(candy1Volume) + parseFloat(addCandy1Volume)).toFixed(2) : parseFloat(candy1Volume).toFixed(2)} ml       
                 </Typography>
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
                   {parseFloat(candy1Volume) + parseFloat(addCandy1Volume) === maxVolume ? <>  
@@ -226,7 +226,7 @@ function ReplenishCandy() {
               </Typography>
               <Divider style={{marginTop: '3%', marginBottom: '3%'}}/>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-                Current volume: {candy2Volume ? candy2Volume : 0} ml
+                Current volume: {candy2Volume ? candy2Volume.toFixed(2) : 0} ml
               </Typography>
               <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
                 <img
@@ -257,7 +257,7 @@ function ReplenishCandy() {
                 direction="row"
               >
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans'}}>
-                  New Volume: {addCandy2Volume ? parseFloat(candy2Volume) + parseFloat(addCandy2Volume) : parseFloat(candy2Volume)} ml       
+                  New Volume: {addCandy2Volume ? (parseFloat(candy2Volume) + parseFloat(addCandy2Volume)).toFixed(2) : parseFloat(candy2Volume).toFixed(2)} ml       
                 </Typography>
                 <Typography variant="h6" style={{fontFamily: 'PlaypenSans', color: 'red'}}>
                   {parseFloat(candy2Volume) + parseFloat(addCandy2Volume) === maxVolume ? 
