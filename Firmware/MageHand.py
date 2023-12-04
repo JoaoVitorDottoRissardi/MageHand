@@ -185,7 +185,7 @@ class MageHand:
         },
          "OrderCount": index+1           }
         response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
-        response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
+        response2 = requests.patch(MageHand.firebase_url + self.user + "/candyInformation.json", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
 
 
     def acceptCandies(self, reason):
@@ -206,7 +206,7 @@ class MageHand:
         },
          "OrderCount": index+1           }
         response = requests.patch(MageHand.firebase_url + self.user + "/OrderHistory.json", data=json.dumps(histDict))
-        response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
+        response2 = requests.patch(MageHand.firebase_url + self.user + "/candyInformation.json", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume }))
 
     """
         Function to initiate the boot phase
@@ -257,7 +257,8 @@ class MageHand:
             return 'introduction'
             
         def undefined_callback(**kargs):
-            self.machine.showGestureMessage('Hand detected \n Do a Stop sign to proceed', 'Info', ['Stop'])
+            # self.machine.showGestureMessage('Hand detected \n Do a Stop sign to proceed', 'Info', ['Stop'])
+            self.machine.showScreen('tela001.png')
             return 'introduction'
         
         def stop_callback(**kargs):
@@ -649,7 +650,7 @@ class MageHand:
             self.candy1 = Candy(c1["Name"], float(c1["Price"]), newVolume1, c1["Image"])
             self.candy2 = Candy(c2["Name"], float(c2["Price"]), newVolume2, c2["Image"])
             (self.dataDir / "candyInformation.json").write_text(json.dumps({"Candy1": c1, "Candy2": c2}))
-            response2 = requests.patch(MageHand.firebase_url + self.user + "", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume, "Candy1/Replenish": 0, "Candy2/Replenish": 0 }))
+            response2 = requests.patch(MageHand.firebase_url + self.user + "/candyInformation.json", data=json.dumps({ "Candy1/Volume": self.candy1.volume, "Candy2/Volume": self.candy2.volume, "Candy1/Replenish": 0, "Candy2/Replenish": 0 }))
 
 if __name__ == '__main__':
     mage = MageHand()

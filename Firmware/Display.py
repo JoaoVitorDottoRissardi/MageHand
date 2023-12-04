@@ -205,6 +205,25 @@ class Display:
                 x += word_surface.get_width() + space_width
 
             y += font.size(line)[1]
+    
+    def displayTextV2(self, surface, text, center, pos, font, color):
+        lines = text.splitlines()
+
+        screen_width, screen_height = surface.get_size()
+
+        total_text_height = sum([font.size(line)[1] for line in lines])
+        total_text_width = max([font.size(line)[0] for line in lines])
+
+    def drawPhaseIndicator(self, phase):
+        if phase not in self.colors:
+            return
+        
+        pygame.draw.rect(self.screen, self.colors[phase], (0, 0, self.screen_width, self.textSize*2))
+
+    def showScreen(self, screen_file):
+        img = pygame.image.load('screens/' + screen_file)
+        self.screen.blit(img, (0, 0))
+        pygame.display.flip()
 
     """
         Function to display a certain pre-defined content
