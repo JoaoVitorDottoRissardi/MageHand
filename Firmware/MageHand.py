@@ -257,8 +257,7 @@ class MageHand:
             return 'introduction'
             
         def undefined_callback(**kargs):
-            # self.machine.showGestureMessage('Hand detected \n Do a Stop sign to proceed', 'Info', ['Stop'])
-            self.machine.showScreen('tela001.png')
+            self.machine.showGestureMessage('Hand detected \n Do a Stop sign to proceed', 'Info', ['Stop'])
             return 'introduction'
         
         def stop_callback(**kargs):

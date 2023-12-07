@@ -1,46 +1,6 @@
 {
    "displayParameters":{
       "colors":{
-         "Introduction":[
-            248,
-            152,
-            212
-         ],
-         "Confirmation":[
-            126,
-            224,
-            124
-         ],
-         "Selection":[
-            255,
-            183,
-            161
-         ],
-         "Pouring":[
-            117,
-            185,
-            251
-         ],
-         "Deciding":[
-            255,
-            189,
-            89
-         ],
-         "Paying":[
-            203,
-            108,
-            230
-         ],
-         "Canceling":[
-            255,
-            49,
-            49
-         ],
-         "Leaving":[
-            92,
-            225,
-            230
-         ],
          "Alert":[
             255,
             0,

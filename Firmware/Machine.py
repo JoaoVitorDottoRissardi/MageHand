@@ -248,8 +248,6 @@ class Machine:
     def showImage(self, image, make_surface=True, pos=(0, 0), clear=True):
         self.display.showImage(image, make_surface=make_surface, pos=pos, clear=clear)
 
-    def showScreen(self, screen_file):
-        self.display.showScreen(screen_file)
 
 # print("Oi")
 
